@@ -1,0 +1,292 @@
+#!/usr/bin/ruby
+# wwine
+# Copyright (C) Eskild Hustvedt 2009
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Command-line parsing
+require 'getoptlong'
+# Application version
+$version = 0.1
+# The wine flavour to use
+$wine = 'wine'
+# The bottle to use
+$bottle = nil
+# Verbose mode (true/false)
+$verbose = false
+
+# Purpose: Attempt to kill all running wine processes
+def killWine ()
+	wines = IO.popen('ps uxwwwww')
+	killed = false
+	wines.each do |line|
+		line.chomp!
+		if line =~ /USER\s*PID/
+			next
+		end
+		pid = String.new(line)
+		name = String.new(line)
+		pid.sub!(/^\S+\s*(\d+)\s+.*/,'\1')
+		name.sub!(/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/,'')
+		if pid == name || pid == line || name == line
+			next
+		end
+		if name =~ /(wine|windows|[a-z]:\\|\.(exe|dll))/i
+			if ! name =~ /wine/i && ( name =~ /\// || ! name =~ /\.(exe|dll)/i )
+				next
+			elsif name =~ /wwine/i || name =~ /(mono|vim)/i
+				next
+			end
+		else
+			next
+		end
+		name.sub!(/\s*$/,'')
+		puts 'Sending SIGTERM to '+name+' (PID '+pid+')'
+		Process.kill(15,pid.to_i)
+		killed = true
+	end
+	if ! killed
+		puts 'No wine processes found.'
+	end
+end
+
+# Purpose: Print formatted --help output
+# Usage: printHelp('-shortoption', '--longoption', 'description');
+#  Description will be reformatted to fit within a normal terminal
+def printHelp (short,long,description)
+	maxlen = 80
+	optionlen = 20
+	# Check if the short/long are LONGER than optionlen, if so, we need
+	# to do some additional magic to take up only $maxlen.
+	# The +1 here is because we always add a space between them, no matter what
+	if (short.length + long.length + 1) > optionlen
+		optionlen = short.length + long.length + 1;
+	end
+
+	generatedDesc = ''
+	currdesc = ''
+
+	description.split(/ /).each do |part|
+		if(generatedDesc.length > 0)
+			if (currdesc.length + part.length + 1 + 20) > maxlen
+				generatedDesc.concat("\n")
+				currdesc = ''
+			else
+				currdesc.concat(' ')
+				generatedDesc.concat(' ')
+			end
+		end
+		currdesc.concat(part)
+		generatedDesc.concat(part)
+	end
+	if !(generatedDesc.length > 0)
+		raise("Option mismatch")
+	end
+	generatedDesc.split(/\n/).each do |descr|
+		printf("%-4s %-15s %s\n",short,long,descr)
+		short = ''; long = ''
+	end
+end
+
+# Purpose: Run a command, outputting info of it in verbose mode
+def runcmd(cmd, type = 'exec')
+	vputs 'Running: '+cmd.join(' ')
+	if(type == 'exec')
+		exec *cmd
+	else
+		return system(*cmd)
+	end
+end
+
+# Purpose: Check for a file in path
+def inPath(exec)
+	ENV['PATH'].split(/:/).each do |part|
+		if File.executable?(part+'/'+exec) and not File.directory?(part+'/'+exec)
+			return true
+		end
+	end
+	return false
+end
+
+# Purpose: Output a string if in verbose mode
+def vputs (str)
+	if $verbose
+		puts(str)
+	end
+end
+
+# Purpose: Print the help output
+def Help ()
+	puts "wwine "+$version.to_s
+	puts ""
+	puts "Usage: wwine (PARAMETERS) PROGRAM -- [ARGUMENTS]"
+	puts ""
+	printHelp('-h','--help','Display this help text')
+	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin')
+	printHelp('-b','--bottle','Use the selected CX bottle, or cedega folder, or WINEPREFIX, depending on the --wine in use')
+	printHelp('-k','--kill','Attempt to kill all running wine processes')
+	printHelp('-v','--verbose','Enable verbose mode')
+end
+
+# Purpose: Get parameters for wine
+def getWineWithParams (wine,bottle)
+	if not inPath('wine')
+		puts('"wine" appears not to be installed')
+		exit(1)
+	end
+	final = []
+	final.push('wine')
+
+	if(bottle != nil && bottle.length > 0)
+		if ENV.has_key?('WINEPREFIX') && ENV['WINEPREFIX'].length > 0
+			warn 'WINEPREFIX= was already set, overriding it.'
+		end
+		if ! (bottle =~ /^\.?\//)
+			bottle = ENV['HOME']+'/.winebottle_'+bottle
+		end
+		ENV['WINEPREFIX'] = bottle
+		vputs('Set WINEPREFIX='+bottle)
+	end
+
+	if ! ENV.has_key?('WINEDEBUG')
+		vputs 'Set WINEDEBUG=-all'
+		ENV['WINEDEBUG'] = '-all'
+	end
+
+	return final
+end
+
+# Purpose: Get parameters for crossover
+def getCXwithParams (wine,bottle)
+	final = []
+	cxdir = nil
+
+	['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine].each do |path|
+		if File.exists?(path)
+			cxdir = path
+			break
+		end
+	end
+
+	if not cxdir
+		puts('Failed to locate '+wine)
+		exit(1)
+	end
+
+
+	bin = cxdir+'/bin/cxstart'
+	if not File.executable?(bin)
+		puts(wine+': does not appear to be installed in '+cxdir)
+		exit(1)
+	end
+	final.push(cxdir+'/bin/cxstart')
+	if(bottle != nil && bottle.length > 0)
+		final.push('--bottle',bottle)
+	end
+
+	if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+		puts 'The bottle '+bottle+' did not exist, creating...'
+		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create'],'system')
+		if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+			puts 'Bottle creation failed.'
+			exit 1
+		end
+	end
+
+	return final
+end
+
+# Purpose: Get parameters for cedega
+def getCedegaWithParams (wine,bottle)
+	final = []
+
+	if not inPath('cedega')
+		puts('cedega does not appear to be installed')
+		exit(1)
+	end
+
+	final.push('cedega','--install')
+
+	if (bottle == nil || bottle.length == 0)
+		bottle = 'wwineFolder'
+	end
+	final.push(bottle)
+
+	return final
+end
+
+# Purpose: Run the wine specified, using the bottle specified and arguments specified
+def runWine (wine,bottle,args)
+	cmd = nil
+	if wine == 'cxg'
+		wine = 'cxgames'
+	elsif wine == 'cxo'
+		wine = 'cxoffice'
+	end
+	if wine == 'cxgames' || wine == 'cxoffice'
+		cmd = getCXwithParams(wine,bottle)
+	elsif wine == 'wine'
+		cmd = getWineWithParams(wine,bottle)
+	elsif wine == 'cedega'
+		cmd = getCedegaWithParams(wine,bottle)
+	else
+		puts('Unknown --wine: '+wine)
+		puts('Must be one of: wine, cxgames, cxoffice, cedega')
+		exit(1)
+	end
+	cmd.concat(args)
+
+	runcmd(cmd)
+end
+
+opts = GetoptLong.new(
+	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+	[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--kill', '-k', GetoptLong::NO_ARGUMENT ],
+	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
+)
+
+begin
+	opts.each do |opt, arg|
+		case opt
+		when '--help'
+			Help()
+			exit(0)
+		when '--wine'
+			$wine = arg
+		when '--bottle'
+			$bottle = arg
+		when '--verbose'
+			$verbose = true
+		when '--kill'
+			begin
+				killWine()
+			rescue
+				puts "Error while attempting to kill processes: "+$!
+			end
+			exit(0)
+		end
+	end
+rescue
+	puts('See --help for more inforation')
+	exit(1)
+end
+
+if ARGV.length == 0
+	Help()
+	exit(1)
+end
+
+runWine($wine,$bottle,ARGV)
