@@ -133,8 +133,8 @@ def Help ()
 	puts "Usage: wwine (PARAMETERS) PROGRAM -- [ARGUMENTS]"
 	puts ""
 	printHelp('-h','--help','Display this help text')
-	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin')
-	printHelp('-b','--bottle','Use the selected CX bottle, or cedega folder, or WINEPREFIX, depending on the --wine in use')
+	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
+	printHelp('-b','--bottle','Use the selected bottle (~/.winebottle_[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
 	printHelp('-v','--verbose','Enable verbose mode')
 end
