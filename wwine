@@ -27,7 +27,7 @@ $bottle = nil
 $verbose = false
 
 # Purpose: Attempt to kill all running wine processes
-def killWine ()
+def killWine (dryRun = false)
 	wines = IO.popen('ps uxwwwww')
 	killed = false
 	wines.each do |line|
@@ -52,8 +52,12 @@ def killWine ()
 			next
 		end
 		name.sub!(/\s*$/,'')
-		puts 'Sending SIGTERM to '+name+' (PID '+pid+')'
-		Process.kill(15,pid.to_i)
+		if !dryRun
+			puts 'Sending SIGTERM to '+name+' (PID '+pid+')'
+			Process.kill(15,pid.to_i)
+		else
+			puts 'Would send SIGTERM to '+name+' (PID '+pid+')'
+		end
 		killed = true
 	end
 	if ! killed
@@ -255,6 +259,7 @@ opts = GetoptLong.new(
 	[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--kill', '-k', GetoptLong::NO_ARGUMENT ],
+	[ '--drykill', GetoptLong::NO_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -270,6 +275,9 @@ begin
 			$bottle = arg
 		when '--verbose'
 			$verbose = true
+		when '--drykill'
+			killWine(true)
+			exit(0)
 		when '--kill'
 			begin
 				killWine()
