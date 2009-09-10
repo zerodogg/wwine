@@ -149,12 +149,14 @@ end
 
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle)
-	if not inPath('wine')
-		puts('"wine" appears not to be installed')
-		exit(1)
-	end
 	final = []
-	final.push('wine')
+	if !File.exists?(wine)
+		if not inPath('wine')
+			puts('"wine" appears not to be installed')
+			exit(1)
+		end
+	end
+	final.push(wine)
 
 	if(bottle != nil && bottle.length > 0)
 		if ENV.has_key?('WINEPREFIX') && ENV['WINEPREFIX'].length > 0
@@ -261,7 +263,7 @@ def runWine (wine,bottle,args)
 	end
 	if wine == 'cxgames' || wine == 'cxoffice'
 		cmd = getCXwithParams(wine,bottle)
-	elsif wine == 'wine'
+	elsif wine == 'wine' || Flie.executable?(wine)
 		cmd = getWineWithParams(wine,bottle)
 	elsif wine == 'cedega'
 		cmd = getCedegaWithParams(wine,bottle)
