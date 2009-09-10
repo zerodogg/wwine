@@ -77,6 +77,14 @@ commands it is running.
 
 Requires at least one of wine, cxoffice, cxgames or cedega.
 
+=head1 HELP/SUPPORT
+
+If you need help or support please visit the website at L<http://random.zerodogg.org/wwine>
+
+=head1 BUGS AND LIMITATIONS
+
+If you find a bug, please report it at L<http://random.zerodogg.org/wwine/bugs>
+
 =head1 AUTHOR
 
 B<wwine> is written by Eskild Hustvedt <I<code at zerodogg dot org>>
