@@ -1,0 +1,11 @@
+TODO list for wwine in no particular order.
+
+--auto,-a mode. Autodetect and autocreate bottles depending
+on the location of the file.
+
+--wrap mode. Create an automatic wrapper script around a
+command, so that an entire wwine command does not have to
+be repeated.
+
+Fall back to attempts to detect various wine flavours
+if no --wine was supplied.
