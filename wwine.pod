@@ -1,0 +1,89 @@
+# Yes this is a pod file living in a Ruby project.
+#
+# POD is a very nice format to write documentation in, and RDoc does
+# not appear to be able to properly export to manpages, hence why I
+# decided to use POD. In any case, the resulting manpage is what
+# most people will use anyway.
+
+=head1 NAME
+
+wwine - a simple wine(1) wrapper
+
+=head1 SYNOPSIS
+
+wwine I<(WWINE PARAMETERS)> I<PROGRAM> -- I<[PROGRAM ARGUMENTS]>
+
+=head1 DESCRIPTION
+
+B<wwine> is a a wine(1) wrapper. It wraps various flavours of wine
+(including vanilla wine and crossover office/games) into a single
+unified interface, complete with full bottle support for all
+of them (including vanilla wine).
+
+It integrates well with all flavours, so for instance applications
+installed using crossover will be managable through the usual crossover
+interface.
+
+For vanilla wine it uses WINEPREFIX to achieve bottle support,
+creating bottles as ~/.winebottle_[BOTTLE_NAME].
+
+=head1 OPTIONS
+
+=over
+
+=item B<-h, --help>
+
+Display the help screen
+
+=item B<-w, --wine> I<FLAVOUR>
+
+Use the supplied flavour of wine. The default is to use vanilla wine.
+
+Possible paramters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
+cxo (alias for cxoffice) or /path/to/a/wine.binary
+
+See also I<--cxinstalldir>.
+
+=item B<-b, --bottle> I<NAME>
+
+Use the bottle with the name supplied. For cxgames, cxoffice or cedega
+it uses the flavours builtin bottle support. For vanilla wine it sets
+WINEPREFIX to use ~/.winebottle_I<NAME>. It defaults to no bottle,
+in which case vanilla wine will use ~/.wine, cxoffice/cxgames will
+use the bottle defined as default and for cedega a bottle named 'wwineFolder'
+will be used.
+
+=item B<-k, --kill>
+
+Attempt to kill all running wine processes. See also I<--drykill>
+
+=item B<--drykill>
+
+Print what I<--kill> would have done, without actually doing anything.
+
+=item B<-c, --cxinstalldir> I<PATH>
+
+Use the supplied path as the path to either a crossover office/games install
+directory, or as a directory that contains a cxoffice and/or cxgames directory.
+
+=item B<-v, --verbose>
+
+Increase verbosity. When this is present wwine will tell you the exact
+commands it is running.
+
+=back
+
+=head1 DEPENDENCIES
+
+Requires at least one of wine, cxoffice, cxgames or cedega.
+
+=head1 AUTHOR
+
+B<wwine> is written by Eskild Hustvedt <I<code at zerodogg dot org>>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) Eskild Hustvedt 2009
+
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
