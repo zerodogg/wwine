@@ -284,6 +284,7 @@ opts = GetoptLong.new(
 	[ '--kill', '-k', GetoptLong::NO_ARGUMENT ],
 	[ '--drykill', GetoptLong::NO_ARGUMENT ],
 	[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--version',GetoptLong::NO_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -311,6 +312,9 @@ begin
 			exit(0)
 		when '--cxinstalldir'
 			$cxPath = arg
+		when '--version'
+			puts('wwine version '+$version.to_s)
+			exit(0)
 		end
 	end
 rescue
