@@ -25,6 +25,8 @@ $wine = 'wine'
 $bottle = nil
 # Verbose mode (true/false)
 $verbose = false
+# CX path
+$cxPath = nil
 
 # Purpose: Attempt to kill all running wine processes
 def killWine (dryRun = false)
@@ -140,6 +142,8 @@ def Help ()
 	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
 	printHelp('-b','--bottle','Use the selected bottle (~/.winebottle_[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
+	printHelp('','--drykill','Print what --kill would have done, but don\'t actually do anything')
+	printHelp('-c','--cxinstalldir','Use the supplied path as the install path for CXoffice/CXgames (default: autodetect).')
 	printHelp('-v','--verbose','Enable verbose mode')
 end
 
@@ -176,15 +180,32 @@ def getCXwithParams (wine,bottle)
 	final = []
 	cxdir = nil
 
-	['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine].each do |path|
+	wines = ['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine]
+
+	if $cxPath != nil
+		wines = [ $cxPath+'/'+wine ]
+	end
+
+	wines.each do |path|
 		if File.exists?(path)
 			cxdir = path
 			break
 		end
 	end
 
+	if $cxPath != nil
+		if File.exists?($cxPath+'/etc/'+wine+'.conf')
+			cxdir = $cxPath
+		end
+	end
+
 	if not cxdir
-		puts('Failed to locate '+wine)
+		if $cxPath != nil
+			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
+			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
+		else
+			puts('Failed to locate '+wine)
+		end
 		exit(1)
 	end
 
@@ -260,6 +281,7 @@ opts = GetoptLong.new(
 	[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--kill', '-k', GetoptLong::NO_ARGUMENT ],
 	[ '--drykill', GetoptLong::NO_ARGUMENT ],
+	[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -285,6 +307,8 @@ begin
 				puts "Error while attempting to kill processes: "+$!
 			end
 			exit(0)
+		when '--cxinstalldir'
+			$cxPath = arg
 		end
 	end
 rescue
