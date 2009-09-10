@@ -323,4 +323,14 @@ if ARGV.length == 0
 	exit(1)
 end
 
-runWine($wine,$bottle,ARGV)
+begin
+	runWine($wine,$bottle,ARGV)
+rescue
+	puts('An exception has occurred and wwine can not continue.')
+	puts('This almost certainly reflects a bug in wwine.')
+	puts('Please check that you have the latest version off wwine,')
+	puts('and if you do, report this issue to http://random.zerodogg.org/wwine/bugs')
+	puts()
+	puts('Exception: '+$!)
+	exit(1)
+end
