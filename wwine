@@ -29,34 +29,50 @@ $verbose = false
 $cxPath = nil
 # Path to write wrapper to
 $wrapperPath = nil
+# Directory to cd to in a wrapper
 $wrapperCwd = nil
 
 # Purpose: Attempt to kill all running wine processes
 def killWine (dryRun = false)
-	wines = IO.popen('ps uxwwwww')
+	# Open a pipe to ps to read processes
+	wines = IO.popen('ps uxw')
+	# True if we have killed something
 	killed = false
+	# Go through each line in the 'ps' output
 	wines.each do |line|
 		line.chomp!
+		# Ignore the ehader
 		if line =~ /USER\s*PID/
 			next
 		end
 		pid = String.new(line)
 		name = String.new(line)
+		# Parse the PID
 		pid.sub!(/^\S+\s*(\d+)\s+.*/,'\1')
+		# Parse the name
 		name.sub!(/^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+/,'')
+		# If either of these are true some part of the parsing failed, and we
+		# should thus simply skip this line
 		if pid == name || pid == line || name == line
 			next
 		end
+		# Ignore processes that are not wine-related
 		if name =~ /(wine|windows|[a-z]:\\|\.(exe|dll))/i
+			# If wine is not a part of the process name, check if the
+			# name either includes a \ (which most likely means it is a windows
+			# path because it has already matched one of the above) or exe/dll.
 			if ! name =~ /wine/i && ( name =~ /\// || ! name =~ /\.(exe|dll)/i )
 				next
+			# Ignore mono and vim
 			elsif name =~ /wwine/i || name =~ /(mono|vim)/i
 				next
 			end
 		else
 			next
 		end
+		# Clean up the name
 		name.sub!(/\s*$/,'')
+		# Send SIGTERM (or output information if in dryRun mode)
 		if !dryRun
 			puts 'Sending SIGTERM to '+name+' (PID '+pid+')'
 			Process.kill(15,pid.to_i)
@@ -110,6 +126,7 @@ end
 
 # Purpose: Write a wrapper script
 def writeWrapper (targetFile, wwineCommand, otherCommand, cwd)
+	# Open the file for riting
 	begin
 		file = File.open(targetFile,'w')
 	rescue
@@ -153,6 +170,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args)
 		exit(1)
 	end
 
+	# Generate a wwine command-line
 	if $verbose
 		wwineCmd.push('--verbose')
 	end
@@ -165,6 +183,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args)
 	if bottle
 		wwineCmd.push('--bottle',bottle)
 	end
+	# Append -- if it isn't already
 	if ! args.join(' ').match(/ -- /)
 		wwineCmd.push('--')
 	end
@@ -225,14 +244,18 @@ end
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle)
 	final = []
+	# If wine is not a path or does not exist, check for wine in the path
 	if !File.exists?(wine)
 		if not inPath('wine')
 			puts('"wine" appears not to be installed')
 			exit(1)
+		else
+			wine = 'wine'
 		end
 	end
 	final.push(wine)
 
+	# Set WINEPREFIX for bottle support
 	if(bottle != nil && bottle.length > 0)
 		if ENV.has_key?('WINEPREFIX') && ENV['WINEPREFIX'].length > 0
 			warn 'WINEPREFIX= was already set, overriding it.'
@@ -244,6 +267,7 @@ def getWineWithParams (wine,bottle)
 		vputs('Set WINEPREFIX='+bottle)
 	end
 
+	# Default to no debugging output if WINEDEBUG is not set yet
 	if ! ENV.has_key?('WINEDEBUG')
 		vputs 'Set WINEDEBUG=-all'
 		ENV['WINEDEBUG'] = '-all'
@@ -257,8 +281,10 @@ def getCXwithParams (wine,bottle)
 	final = []
 	cxdir = nil
 
+	# Various crossover install paths
 	wines = ['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine]
 
+	# If cxpath is set then overwrite the default paths
 	if $cxPath != nil
 		wines = [ $cxPath+'/'+wine ]
 	end
@@ -270,12 +296,14 @@ def getCXwithParams (wine,bottle)
 		end
 	end
 
+	# If we're using cxPath, perform some additional detection
 	if $cxPath != nil
 		if File.exists?($cxPath+'/etc/'+wine+'.conf')
 			cxdir = $cxPath
 		end
 	end
 
+	# If the dir does not exist, give up
 	if not cxdir
 		if $cxPath != nil
 			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
@@ -286,7 +314,7 @@ def getCXwithParams (wine,bottle)
 		exit(1)
 	end
 
-
+	# Find the bin
 	bin = cxdir+'/bin/cxstart'
 	if not File.executable?(bin)
 		puts(wine+': does not appear to be installed in '+cxdir)
@@ -297,6 +325,7 @@ def getCXwithParams (wine,bottle)
 		final.push('--bottle',bottle)
 	end
 
+	# Create the bottle if it does not exist
 	if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create'],'system')
@@ -320,6 +349,7 @@ def getCedegaWithParams (wine,bottle)
 
 	final.push('cedega','--install')
 
+	# Use wwineFolder as the folder if no bottle was supplied
 	if (bottle == nil || bottle.length == 0)
 		bottle = 'wwineFolder'
 	end
@@ -331,11 +361,13 @@ end
 # Purpose: Run the wine specified, using the bottle specified and arguments specified
 def runWine (wine,bottle,args)
 	cmd = nil
+	# Expand cxg and cxo
 	if wine == 'cxg'
 		wine = 'cxgames'
 	elsif wine == 'cxo'
 		wine = 'cxoffice'
 	end
+
 	if wine == 'cxgames' || wine == 'cxoffice'
 		cmd = getCXwithParams(wine,bottle)
 	elsif wine == 'wine' || Flie.executable?(wine)
@@ -344,11 +376,13 @@ def runWine (wine,bottle,args)
 		cmd = getCedegaWithParams(wine,bottle)
 	else
 		puts('Unknown --wine: '+wine)
-		puts('Must be one of: wine, cxgames, cxoffice, cedega')
+		puts('Must be one of: wine, cxgames, cxoffice, cedega, or the path to a wine executable')
 		exit(1)
 	end
 	cmd.concat(args)
 
+	# If wrapperPath is set, then we're suppose to generate a wrapper script instead
+	# of actually executing it.
 	if $wrapperPath != nil
 		generateWrapper(wine,bottle,$wrapperPath,cmd,args)
 	else
@@ -369,6 +403,7 @@ opts = GetoptLong.new(
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
+# Handle command-line arguments
 begin
 	opts.each do |opt, arg|
 		case opt
