@@ -25,11 +25,11 @@ install:
 	mkdir -p "$(BINDIR)"
 	cp wwine "$(BINDIR)"
 	chmod 755 "$(BINDIR)/wwine"
-	[  -e wwine.1 ] && mkdir -p "$(DATADIR)/man/man1" && cp wwine.1 "$(DATADIR)/man/man1" || true
+	mkdir -p "$(DATADIR)/man/man1" && cp wwine.1 "$(DATADIR)/man/man1" || true
 localinstall:
 	mkdir -p "$(BINDIR)"
 	ln -sf $(shell pwd)/wwine $(BINDIR)/
-	[  -e wwine.1 ] && mkdir -p "$(DATADIR)/man/man1" && ln -sf $(shell pwd)/wwine.1 "$(DATADIR)/man/man1" || true
+	mkdir -p "$(DATADIR)/man/man1" && ln -sf $(shell pwd)/wwine.1 "$(DATADIR)/man/man1" || true
 # Uninstall an installed wwine
 uninstall:
 	rm -f "$(BINDIR)/wwine"
@@ -37,9 +37,8 @@ uninstall:
 # Clean up the tree
 clean:
 	rm -f `find|egrep '~$$'`
-	rm -f wwine-*.tar.bz2
+	rm -f wwine-*.tar.bz2 wwine-*.gem
 	rm -rf wwine-$(VERSION)
-	rm -f wwine.1
 # Verify syntax
 test:
 	@ruby -c wwine
@@ -47,10 +46,18 @@ test:
 man:
 	pod2man --name "wwine - wine wrapper" --center "" --release "wwine $(VERSION)" ./wwine.pod ./wwine.1
 	perl -ni -e 'if(not $$seen) { if(not /Title/) { next } $$seen = 1 };print' ./wwine.1
+# Generate files for distribution
+distrib: clean test gem tarball
 # Create the tarball
-distrib: clean test
+tarball: clean test
 	mkdir -p wwine-$(VERSION)
 	cp -r $(DISTFILES) ./wwine-$(VERSION)
 	rm -rf `find wwine-$(VERSION) -name \\.git`
 	tar -jcvf wwine-$(VERSION).tar.bz2 ./wwine-$(VERSION)
 	rm -rf wwine-$(VERSION)
+# Build the gem
+TESTGEM?=testgem
+gem: clean test $(TESTGEM)
+	gem build wwine.gemspec
+testgem:
+	if ! grep '"$(VERSION)"' wwine.gemspec 2>&1 >/dev/null; then echo;echo "Update s.version in wwine.gemspec";exit 1;fi
