@@ -241,6 +241,23 @@ def Help ()
 	printHelp('-v','--verbose','Enable verbose mode')
 end
 
+# Purpose: Print debugging info
+def debugInfo ()
+	puts "wwine "+$version.to_s
+	begin
+		if inPath('md5sum')
+			outStr = nil
+			out = IO.popen('md5sum '+File.expand_path($0))
+			outStr = out.readline
+			outStr.sub!(/\s+.*$/,'')
+			puts('md5sum: '+outStr)
+		end
+	rescue
+		puts('(exception while generating md5sum: '+$!+')')
+	end
+	exit(0)
+end
+
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle)
 	final = []
@@ -400,6 +417,7 @@ opts = GetoptLong.new(
 	[ '--version',GetoptLong::NO_ARGUMENT ],
 	[ '--wrap', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -419,6 +437,8 @@ begin
 		when '--drykill'
 			killWine(true)
 			exit(0)
+		when '--debuginfo'
+			debugInfo()
 		when '--kill'
 			begin
 				killWine()
