@@ -2,8 +2,9 @@
 #
 # POD is a very nice format to write documentation in, and RDoc does
 # not appear to be able to properly export to manpages, hence why I
-# decided to use POD. In any case, the resulting manpage is what
-# most people will use anyway.
+# decided to use POD. The manpage that also lives in the git repo
+# is the one that is distributed. The POD only lives in the git repo
+# and is used to generate the manpage.
 
 =head1 NAME
 

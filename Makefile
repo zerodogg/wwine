@@ -43,12 +43,12 @@ clean:
 # Verify syntax
 test:
 	@ruby -c wwine
-# Create a manpage from the POD
+# Generate the manpage from the POD
 man:
 	pod2man --name "wwine - wine wrapper" --center "" --release "wwine $(VERSION)" ./wwine.pod ./wwine.1
 	perl -ni -e 'if(not $$seen) { if(not /Title/) { next } $$seen = 1 };print' ./wwine.1
 # Create the tarball
-distrib: clean test man
+distrib: clean test
 	mkdir -p wwine-$(VERSION)
 	cp -r $(DISTFILES) ./wwine-$(VERSION)
 	rm -rf `find wwine-$(VERSION) -name \\.git`
