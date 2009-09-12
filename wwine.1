@@ -1,5 +1,5 @@
 .IX Title "wwine - wine wrapper 1"
-.TH "wwine - wine wrapper" 1 "2009-09-11" "wwine 0.1" ""
+.TH "wwine - wine wrapper" 1 "2009-09-13" "wwine 0.1" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -30,10 +30,10 @@ Display the help screen
 .IP "\fB\-w, \-\-wine\fR \fI\s-1FLAVOUR\s0\fR" 4
 .IX Item "-w, --wine FLAVOUR"
 Use the supplied flavour of wine. The default is to use vanilla wine.
-.Sp
+
 Possible paramters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
 cxo (alias for cxoffice) or /path/to/a/wine.binary
-.Sp
+
 See also \fI\-\-cxinstalldir\fR.
 .IP "\fB\-b, \-\-bottle\fR \fI\s-1NAME\s0\fR" 4
 .IX Item "-b, --bottle NAME"
@@ -60,14 +60,14 @@ Generate a wrapper script of the current command-line and write it to
 to it, and wwine will generate a wrapper script that you can use to
 run that command with at any later time so you don't have to remember
 or retype it every time.
-.Sp
+
 Generally \fI\s-1PATH\s0\fR should be somewhere in your \f(CW$PATH\fR (ie. ~/bin/somecommand)
 so that you can start the command from anywhere.
-.Sp
+
 By default the wrapper script will change directory to the directory
 you were in when you created it, but you can use \fB\-\-wrapdir\fR to explicitly
 supply one.
-.Sp
+
 The wrapper script also contains some basic code that ensures that
 even if you remove or move wwine, the wrapper script will keep working.
 .IP "\fB\-\-wrapdir\fR \fI\s-1PATH\s0\fR" 4
