@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Eskild Hustvedt"]
   s.date = %q{2009-09-12}
   s.email = %q{code at zerodogg dot org}
-  s.files = [ 'wwine', 'README', 'COPYING' ]
+  s.files = [ 'wwine', 'README', 'COPYING', 'wwine.1' ]
   s.bindir = '.'
   s.executables = [ 'wwine' ]
   s.homepage = %q{http://random.zerodogg.org/wwine}
