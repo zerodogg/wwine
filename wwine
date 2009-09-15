@@ -125,7 +125,7 @@ def printHelp (short,long,description)
 end
 
 # Purpose: Write a wrapper script
-def writeWrapper (targetFile, wwineCommand, otherCommand, cwd)
+def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wineprefix = nil)
 	# Open the file for riting
 	begin
 		file = File.open(targetFile,'w')
@@ -149,6 +149,11 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd)
 	file.puts('if [ "x$wwine" != "x" ]; then')
 	file.puts("\t"+'exec "$wwine"'+" '"+wwineCommand.join("' '")+"'"+' "$@"')
 	file.puts('else')
+	if wineprefix != nil
+		wineprefix.sub!(/'/,'\\')
+		file.puts("\t"+'export WINEPREFIX=\''+wineprefix+'\'')
+		file.puts("\t"+'export WINEDEBUG="-all"');
+	end
 	file.puts("\t"+"exec '"+otherCommand.join("' '")+"'"+' "$@"')
 	file.puts('fi')
 	file.puts('echo "Launch script failed. No wwine found and wine command failed to exec."')
@@ -161,7 +166,7 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd)
 end
 
 # Purpose: Prepare to generate a wrapper script
-def generateWrapper (wine,bottle,targetFile,wineCommand,args)
+def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 	wwineCmd = []
 
 	if File.exists?(targetFile)
@@ -194,7 +199,13 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args)
 		$wrapperCwd = Dir.pwd
 	end
 
-	writeWrapper(targetFile ,wwineCmd, wineCommand, $wrapperCwd)
+	wineprefix = nil
+
+	if type == 'wine'
+		wineprefix = ENV['WINEPREFIX']
+	end
+
+	writeWrapper(targetFile ,wwineCmd, wineCommand, $wrapperCwd, wineprefix)
 end
 
 # Purpose: Run a command, outputting info of it in verbose mode
@@ -385,9 +396,12 @@ def runWine (wine,bottle,args)
 		wine = 'cxoffice'
 	end
 
+	type = wine
+
 	if wine == 'cxgames' || wine == 'cxoffice'
 		cmd = getCXwithParams(wine,bottle)
 	elsif wine == 'wine' || Flie.executable?(wine)
+		type = 'wine'
 		cmd = getWineWithParams(wine,bottle)
 	elsif wine == 'cedega'
 		cmd = getCedegaWithParams(wine,bottle)
@@ -401,7 +415,7 @@ def runWine (wine,bottle,args)
 	# If wrapperPath is set, then we're suppose to generate a wrapper script instead
 	# of actually executing it.
 	if $wrapperPath != nil
-		generateWrapper(wine,bottle,$wrapperPath,cmd,args)
+		generateWrapper(wine,bottle,$wrapperPath,cmd,args,type)
 	else
 		runcmd(cmd)
 	end
