@@ -149,6 +149,8 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wineprefix = nil)
 	file.puts('if [ "x$wwine" != "x" ]; then')
 	file.puts("\t"+'exec "$wwine"'+" '"+wwineCommand.join("' '")+"'"+' "$@"')
 	file.puts('else')
+	# Add wineprefix if needed. This is used when --wine is wine because wine
+	# has no support for specifying a bottle on the command-line.
 	if wineprefix != nil
 		wineprefix.sub!(/'/,'\\')
 		file.puts("\t"+'export WINEPREFIX=\''+wineprefix+'\'')
@@ -201,6 +203,8 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 
 	wineprefix = nil
 
+	# For wine there is no --bottle definition in the wine command itself,
+	# so we need to export a wineprefix in the launch script
 	if type == 'wine'
 		wineprefix = ENV['WINEPREFIX']
 	end
