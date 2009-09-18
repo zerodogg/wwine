@@ -254,6 +254,28 @@ def Help ()
 	printHelp('','--wrap','Write a wrapper script of your current wwine command to the path supplied')
 	printHelp('','--wrapdir','Use the supplied directory as the working directory for the script created by --wrap (default: current directory)')
 	printHelp('-v','--verbose','Enable verbose mode')
+	printHelp('','--man','Show the wwine manpage')
+end
+
+# Purpose: Show the manpage
+def showManPage ()
+	mySelf = File.expand_path($0)
+	while File.symlink?(mySelf)
+		mySelf = File.readlink(mySelf)
+	end
+	sourceDir = '.'
+	if mySelf != nil
+		sourceDir = File.dirname(mySelf)
+	end
+	if File.exists?(sourceDir+'/wwine.1')
+		exec('man',sourceDir+'/wwine.1')
+	elsif File.exists?('./wwine.1')
+		exec('man','./wwine.1')
+	end
+	puts
+	puts 'wwine failed to locate its manpage.'
+	puts 'Run the following command to view it:'
+	puts '\curl -s "http://github.com/zerodogg/wwine/raw/master/wwine.1" |  groff -T utf8 -man | \less'
 end
 
 # Purpose: Print debugging info
@@ -436,6 +458,7 @@ opts = GetoptLong.new(
 	[ '--wrap', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
+	[ '--man', GetoptLong::NO_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -473,6 +496,9 @@ begin
 			$wrapperPath = arg
 		when '--wrapdir'
 			$wrapperCwd = arg
+		when '--man'
+			showManPage()
+			exit(0)
 		end
 	end
 rescue

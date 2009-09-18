@@ -96,6 +96,14 @@ were in at the time the wrapper script was created.
 Increase verbosity. When this is present wwine will tell you the exact
 commands it is running.
 
+=item B<--man>
+
+Show the manpage. Normally 'man wwine' would do, but when wwine is
+installed from a rubygem the wwine manpage isn't placed anywhere
+in man(1)'s path, this will autodetect its location and issue man
+directly on the wwine.1 file (and thus work even when 'man wwine'
+does not).
+
 =back
 
 =head1 DEPENDENCIES
