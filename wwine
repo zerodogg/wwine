@@ -259,6 +259,12 @@ end
 
 # Purpose: Show the manpage
 def showManPage ()
+	if ! inPath('man')
+		puts
+		puts "You don't appear to have the 'man' program installed."
+		puts "Please install it, then re-run wwine --man"
+		exit(0)
+	end
 	mySelf = File.expand_path($0)
 	while File.symlink?(mySelf)
 		mySelf = File.readlink(mySelf)
@@ -267,10 +273,17 @@ def showManPage ()
 	if mySelf != nil
 		sourceDir = File.dirname(mySelf)
 	end
-	if File.exists?(sourceDir+'/wwine.1')
-		exec('man',sourceDir+'/wwine.1')
-	elsif File.exists?('./wwine.1')
-		exec('man','./wwine.1')
+	dirs = [sourceDir]
+	if ENV['MANPATH']
+		dirs.concat(ENV['MANPATH'].split(':'))
+	end
+	dirs.push('./')
+	dirs.each do |dir|
+		[ 'wwine.1','man1/wwine.1','man1/wwine.1.gz','man1/wwine.1.bz2','man1/wwine.1.lzma'].each do |manFile|
+			if File.exists?(dir+'/'+manFile)
+				exec('man',dir+'/'+manFile)
+			end
+		end
 	end
 	puts
 	puts 'wwine failed to locate its manpage.'
