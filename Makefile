@@ -44,7 +44,7 @@ test:
 	@ruby -c wwine
 # Generate the manpage from the POD
 man:
-	pod2man --name "wwine - wine wrapper" --center "" --release "wwine $(VERSION)" ./wwine.pod ./wwine.1
+	pod2man --center "" --release "wwine $(VERSION)" ./wwine.pod ./wwine.1
 	perl -ni -e 'if(not $$seen) { if(not /Title/) { next } $$seen = 1 }; s/\.Sp//; print' ./wwine.1
 # Generate files for distribution
 distrib: clean test gem tarball
