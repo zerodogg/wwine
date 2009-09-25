@@ -526,12 +526,17 @@ end
 
 begin
 	runWine($wine,$bottle,ARGV)
-rescue
+rescue => ex
+	puts('---')
+	puts('Exception: '+ex.to_s)
+	puts('Backtrace: '+"\n"+ex.backtrace.join("\n"))
+	puts('---')
+	puts()
 	puts('An exception has occurred and wwine can not continue.')
 	puts('This almost certainly reflects a bug in wwine.')
 	puts('Please check that you have the latest version off wwine,')
-	puts('and if you do, report this issue to http://random.zerodogg.org/wwine/bugs')
-	puts()
-	puts('Exception: '+$!)
+	puts('and if you do, report this issue along with the text between the "---" above');
+	puts('to http://random.zerodogg.org/wwine/bugs')
 	exit(1)
+end
 end
