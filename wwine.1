@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2009-09-18" "wwine 0.1" ""
+.TH WWINE 1 "2009-09-26" "wwine 0.1" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -86,6 +86,39 @@ installed from a rubygem the wwine manpage isn't placed anywhere
 in \fIman\fR\|(1)'s path, this will autodetect its location and issue man
 directly on the wwine.1 file (and thus work even when 'man wwine'
 does not).
+.SH "EXAMPLES"
+.IX Header "EXAMPLES"
+.IP "\fIwwine file.exe\fR" 4
+.IX Item "wwine file.exe"
+The same as 'WINEDEBUG=\-all wine file.exe'
+.IP "\fIwwine \-b file file.exe\fR" 4
+.IX Item "wwine -b file file.exe"
+Runs file.exe in wine, using the 'file' bottle.
+.IP "\fIwwine \-w cxg \-b file file.exe\fR" 4
+.IX Item "wwine -w cxg -b file file.exe"
+Runs file.exe in crossover games using the cxgames 'file' bottle
+.IP "\fIwwine \-\-cxinstalldir ~/cxgames7.0/ \-w cxg \-b file file.exe\fR" 4
+.IX Item "wwine --cxinstalldir ~/cxgames7.0/ -w cxg -b file file.exe"
+Runs file.exe in the version of crossover games that is installed at
+\&\fI~/cxgames7.0\fR, using the cxgames 'file' bottle.
+
+\&\-\-cxinstalldir can be useful to run something in a version of cxgames/cxoffice
+other than your primary one. Ie. if a regression causes it to not run in a
+later version.
+.IP "\fIwwine \-w cxg \-b file file.exe \-\-wrap ~/bin/startFile\fR" 4
+.IX Item "wwine -w cxg -b file file.exe --wrap ~/bin/startFile"
+This causes wwine to create a wrapper shell script at ~/bin/startFile.
+When you run that wrapper script, it will cd to the directory
+you were in when the script was created, and issue a wwine command
+with the above arguments. If you remove/uninstall wwine, the
+wrapper script will most likely keep working as it has a fallback
+that gets run if wwine can not be found.
+
+If you are not in the directory that you want wwine to run the file
+from, you may use \-\-wrapdir to explicitly specify it.
+.IP "\fIwwine \-k\fR" 4
+.IX Item "wwine -k"
+Will make wwine attempt to kill all running wine processes on this system.
 .SH "DEPENDENCIES"
 .IX Header "DEPENDENCIES"
 Requires at least one of wine, cxoffice, cxgames or cedega.

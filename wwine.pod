@@ -106,6 +106,49 @@ does not).
 
 =back
 
+=head1 EXAMPLES
+
+=over
+
+=item I<wwine file.exe>
+
+The same as 'WINEDEBUG=-all wine file.exe'
+
+=item I<wwine -b file file.exe>
+
+Runs file.exe in wine, using the 'file' bottle.
+
+=item I<wwine -w cxg -b file file.exe>
+
+Runs file.exe in crossover games using the cxgames 'file' bottle
+
+=item I<wwine --cxinstalldir ~/cxgames7.0/ -w cxg -b file file.exe>
+
+Runs file.exe in the version of crossover games that is installed at
+I<~/cxgames7.0>, using the cxgames 'file' bottle.
+
+--cxinstalldir can be useful to run something in a version of cxgames/cxoffice
+other than your primary one. Ie. if a regression causes it to not run in a
+later version.
+
+=item I<wwine -w cxg -b file file.exe --wrap ~/bin/startFile>
+
+This causes wwine to create a wrapper shell script at ~/bin/startFile.
+When you run that wrapper script, it will cd to the directory
+you were in when the script was created, and issue a wwine command
+with the above arguments. If you remove/uninstall wwine, the
+wrapper script will most likely keep working as it has a fallback
+that gets run if wwine can not be found.
+
+If you are not in the directory that you want wwine to run the file
+from, you may use --wrapdir to explicitly specify it.
+
+=item I<wwine -k>
+
+Will make wwine attempt to kill all running wine processes on this system.
+
+=back
+
 =head1 DEPENDENCIES
 
 Requires at least one of wine, cxoffice, cxgames or cedega.
