@@ -539,4 +539,3 @@ rescue => ex
 	puts('to http://random.zerodogg.org/wwine/bugs')
 	exit(1)
 end
-end
