@@ -244,7 +244,7 @@ end
 def Help ()
 	puts "wwine "+$version.to_s
 	puts ""
-	puts "Usage: wwine (PARAMETERS) PROGRAM -- [ARGUMENTS]"
+	puts "Usage: wwine (WWINE PARAMETERS) PROGRAM -- [PROGRAM ARGUMENTS]"
 	puts ""
 	printHelp('-h','--help','Display this help text')
 	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
