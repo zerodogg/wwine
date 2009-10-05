@@ -320,7 +320,7 @@ def getWineWithParams (wine,bottle)
 			wine = 'wine'
 		end
 	end
-	final.push(wine)
+	final.push(wine,'--')
 
 	# Set WINEPREFIX for bottle support
 	if(bottle != nil && bottle.length > 0)
@@ -391,9 +391,10 @@ def getCXwithParams (wine,bottle)
 	if(bottle != nil && bottle.length > 0)
 		final.push('--bottle',bottle)
 	end
+	final.push('--');
 
 	# Create the bottle if it does not exist
-	if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+	if bottle != nil and ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create'],'system')
 		if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
