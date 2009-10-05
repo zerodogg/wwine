@@ -294,6 +294,7 @@ end
 
 # Purpose: Print debugging info
 def debugInfo ()
+	outFormat = '%-20s: %s'+"\n"
 	puts "wwine "+$version.to_s
 	begin
 		if inPath('md5sum')
@@ -301,12 +302,78 @@ def debugInfo ()
 			out = IO.popen('md5sum '+File.expand_path($0))
 			outStr = out.readline
 			outStr.sub!(/\s+.*$/,'')
-			puts('md5sum: '+outStr)
+			outStr.chomp!
+			printf(outFormat,'md5sum',outStr)
 		end
 	rescue
 		puts('(exception while generating md5sum: '+$!+')')
 	end
+
+	begin
+		wineVer = '(not present)'
+		cxgVer = '(not present)'
+		cxoVer = '(not present)'
+		cedegaVer = '(not present)'
+
+		if inPath('wine')
+			out = IO.popen('wine --version')
+			wineVer = out.readline
+			wineVer.chomp!
+			wineVer.sub!(/wine-/,'')
+		end
+		printf(outFormat,'Wine',wineVer)
+
+		cxgBin = getCXwithParams('cxgames',nil)
+		if cxgBin != nil 
+			cxgBin.pop
+			cxgBin.push('--version')
+			cxgBin = cxgBin.join(' ')
+
+			out = IO.popen(cxgBin)
+			cxgVer = out.readline
+			cxgVer = out.readline
+			cxgVer.sub!(/\s*Public\s*Version:\s+/,'')
+			cxgVer.chomp!
+		end
+		printf(outFormat,'Crossover Games',cxgVer)
+
+		cxoBin = getCXwithParams('cxgames',nil)
+		if cxoBin != nil 
+			cxoBin.pop
+			cxoBin.push('--version')
+			cxoBin = cxoBin.join(' ')
+
+			out = IO.popen(cxoBin)
+			cxoVer = out.readline
+			cxoVer = out.readline
+			cxoVer.sub!(/\s*Public\s*Version:\s+/,'')
+			cxoVer.chomp!
+		end
+		printf(outFormat,'Crossover Office',cxoVer)
+
+		if inPath('cedega')
+			cedegaVer = 'present'
+		end
+		printf(outFormat,'Cedega',cedegaVer)
+	rescue => ex
+		handleException(ex)
+	end
 	exit(0)
+end
+
+# Purpose: Handle an exception
+def handleException(ex)
+	puts('---')
+	puts('Exception: '+ex.to_s)
+	puts('Backtrace: '+"\n"+ex.backtrace.join("\n"))
+	puts('---')
+	puts()
+	puts('An exception has occurred and wwine can not continue.')
+	puts('This almost certainly reflects a bug in wwine.')
+	puts('Please check that you have the latest version off wwine,')
+	puts('and if you do, report this issue along with the text between the "---" above');
+	puts('to http://random.zerodogg.org/wwine/bugs')
+	exit(1)
 end
 
 # Purpose: Get parameters for wine
@@ -345,7 +412,7 @@ def getWineWithParams (wine,bottle)
 end
 
 # Purpose: Get parameters for crossover
-def getCXwithParams (wine,bottle)
+def getCXwithParams (wine,bottle, missingIsFatal = true)
 	final = []
 	cxdir = nil
 
@@ -377,6 +444,9 @@ def getCXwithParams (wine,bottle)
 			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
 			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
 		else
+			if !missingIsFatal
+				return nil
+			end
 			puts('Failed to locate '+wine)
 		end
 		exit(1)
@@ -534,15 +604,5 @@ end
 begin
 	runWine($wine,$bottle,ARGV)
 rescue => ex
-	puts('---')
-	puts('Exception: '+ex.to_s)
-	puts('Backtrace: '+"\n"+ex.backtrace.join("\n"))
-	puts('---')
-	puts()
-	puts('An exception has occurred and wwine can not continue.')
-	puts('This almost certainly reflects a bug in wwine.')
-	puts('Please check that you have the latest version off wwine,')
-	puts('and if you do, report this issue along with the text between the "---" above');
-	puts('to http://random.zerodogg.org/wwine/bugs')
-	exit(1)
+	handleException(ex)
 end
