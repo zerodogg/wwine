@@ -353,6 +353,21 @@ def debugInfo ()
 
 		if inPath('cedega')
 			cedegaVer = 'present'
+
+			if ENV.has_key?('HOME')
+				rcFile = ENV['HOME']+'/.cedega/.cedegarc'
+				if File.exists?(rcFile)
+					ind = File.open(ENV['HOME']+'/.cedega/.cedegarc')
+					ind.each do |line|
+						if line.match(/^default=/)
+							line.sub!(/^default=/,'')
+							line.chomp!
+							cedegaVer = line
+							break
+						end
+					end
+				end
+			end
 		end
 		printf(outFormat,'Cedega',cedegaVer)
 	rescue => ex
