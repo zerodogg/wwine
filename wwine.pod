@@ -104,6 +104,11 @@ in man(1)'s path, this will autodetect its location and issue man
 directly on the wwine.1 file (and thus work even when 'man wwine'
 does not).
 
+=item B<--debuginfo>
+
+Output information that is useful for bug reports and to provide if you
+need support.
+
 =back
 
 =head1 EXAMPLES
