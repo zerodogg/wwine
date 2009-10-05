@@ -153,6 +153,30 @@ Will make wwine attempt to kill all running wine processes on this system.
 
 Requires at least one of wine, cxoffice, cxgames or cedega.
 
+=head1 ENVIRONMENT VARIABLES
+
+=over
+
+=item B<WWINE_VERBOSE>
+
+If this environment variable is set to the number '1' (ie. WWINE_VERBOSE=1) wwine
+will act as if --verbose was supplied. This is useful if you want to view verbose
+output from a launch script you created with --wrap.
+
+=item B<WINEDEBUG>
+
+If this is not set, wwine will set it to -all when using -w wine.
+
+=item B<WINEPREFIX>
+
+wwine uses the WINEPREFIX environment variable to add bottle support when
+in -w wine mode. It will override any existing WINEPREFIX that is set.
+
+=back
+
+Any environment variables that wwine sets while it is running will be output
+by wwine when in --verbose mode.
+
 =head1 HELP/SUPPORT
 
 If you need help or support please visit the website at L<http://random.zerodogg.org/wwine>

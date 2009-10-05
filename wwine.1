@@ -122,6 +122,23 @@ Will make wwine attempt to kill all running wine processes on this system.
 .SH "DEPENDENCIES"
 .IX Header "DEPENDENCIES"
 Requires at least one of wine, cxoffice, cxgames or cedega.
+.SH "ENVIRONMENT VARIABLES"
+.IX Header "ENVIRONMENT VARIABLES"
+.IP "\fB\s-1WWINE_VERBOSE\s0\fR" 4
+.IX Item "WWINE_VERBOSE"
+If this environment variable is set to the number '1' (ie. WWINE_VERBOSE=1) wwine
+will act as if \-\-verbose was supplied. This is useful if you want to view verbose
+output from a launch script you created with \-\-wrap.
+.IP "\fB\s-1WINEDEBUG\s0\fR" 4
+.IX Item "WINEDEBUG"
+If this is not set, wwine will set it to \-all when using \-w wine.
+.IP "\fB\s-1WINEPREFIX\s0\fR" 4
+.IX Item "WINEPREFIX"
+wwine uses the \s-1WINEPREFIX\s0 environment variable to add bottle support when
+in \-w wine mode. It will override any existing \s-1WINEPREFIX\s0 that is set.
+.PP
+Any environment variables that wwine sets while it is running will be output
+by wwine when in \-\-verbose mode.
 .SH "HELP/SUPPORT"
 .IX Header "HELP/SUPPORT"
 If you need help or support please visit the website at <http://random.zerodogg.org/wwine>
