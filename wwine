@@ -214,10 +214,11 @@ end
 
 # Purpose: Run a command, outputting info of it in verbose mode
 def runcmd(cmd, type = 'exec')
-	vputs 'Running: '+cmd.join(' ')
 	if(type == 'exec')
+		vputs 'Executing: '+cmd.join(' ')
 		exec *cmd
 	else
+		vputs 'Running: '+cmd.join(' ')
 		return system(*cmd)
 	end
 end
@@ -514,6 +515,11 @@ begin
 			showManPage()
 			exit(0)
 		end
+	end
+
+	if ENV['WWINE_VERBOSE'] != nil && ENV['WWINE_VERBOSE'] == '1'
+		puts('--verbose assumed because the environment variable WWINE_VERBOSE is set to 1')
+		$verbose = true
 	end
 rescue
 	puts('See --help for more inforation')
