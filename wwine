@@ -323,7 +323,7 @@ def debugInfo ()
 		end
 		printf(outFormat,'Wine',wineVer)
 
-		cxgBin = getCXwithParams('cxgames',nil)
+		cxgBin = getCXwithParams('cxgames',nil,false)
 		if cxgBin != nil 
 			cxgBin.pop
 			cxgBin.push('--version')
@@ -337,7 +337,7 @@ def debugInfo ()
 		end
 		printf(outFormat,'Crossover Games',cxgVer)
 
-		cxoBin = getCXwithParams('cxgames',nil)
+		cxoBin = getCXwithParams('cxgames',nil,false)
 		if cxoBin != nil 
 			cxoBin.pop
 			cxoBin.push('--version')
