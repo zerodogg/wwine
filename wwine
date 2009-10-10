@@ -394,16 +394,23 @@ end
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle)
 	final = []
+	possibleWines = [ 'wine32','wine','wine64' ]
 	# If wine is not a path or does not exist, check for wine in the path
 	if !File.exists?(wine)
-		if not inPath('wine')
-			puts('"wine" appears not to be installed')
+		wine = nil
+		possibleWines.each do |w|
+			if inPath(w)
+				wine = w
+				break
+			end
+		end
+
+		if wine == nil
+			puts('"wine" does not appear to be installed')
 			exit(1)
-		else
-			wine = 'wine'
 		end
 	end
-	final.push(wine,'--')
+	final.push(wine)
 
 	# Set WINEPREFIX for bottle support
 	if(bottle != nil && bottle.length > 0)
@@ -526,7 +533,7 @@ def runWine (wine,bottle,args)
 
 	if wine == 'cxgames' || wine == 'cxoffice'
 		cmd = getCXwithParams(wine,bottle)
-	elsif wine == 'wine' || Flie.executable?(wine)
+	elsif wine == 'wine' || File.executable?(wine)
 		type = 'wine'
 		cmd = getWineWithParams(wine,bottle)
 	elsif wine == 'cedega'
