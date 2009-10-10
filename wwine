@@ -303,10 +303,12 @@ def debugInfo ()
 			outStr = out.readline
 			outStr.sub!(/\s+.*$/,'')
 			outStr.chomp!
-			printf(outFormat,'md5sum',outStr)
+			printf(outFormat,'wwine md5sum',outStr)
+		else
+			printf(outFormat,'wwine md5sum','(md5sum command missing)')
 		end
 	rescue
-		puts('(exception while generating md5sum: '+$!+')')
+		printf(outFormat,'wwine md5sum','(exception: '+$!+')');
 	end
 
 	begin
