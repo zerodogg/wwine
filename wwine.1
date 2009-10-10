@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2009-10-05" "wwine 0.1" ""
+.TH WWINE 1 "2009-10-10" "wwine 0.1" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -22,6 +22,10 @@ interface.
 .PP
 For vanilla wine it uses \s-1WINEPREFIX\s0 to achieve bottle support,
 creating bottles as ~/.winebottle_[\s-1BOTTLE_NAME\s0].
+.PP
+When no \-\-wine is explicitly supplied, wwine will use wine, or if that is
+not available, attempt to autodetect which flavour to use. See the information
+for \-\-wine for more information.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-h, \-\-help\fR" 4
@@ -33,6 +37,10 @@ Use the supplied flavour of wine. The default is to use vanilla wine.
 
 Possible parameters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
 cxo (alias for cxoffice) or /path/to/a/wine.binary
+
+If this parameter is not supplied, wwine will attempt to autodetect which
+wine to use, checking for the existance of flavours in the following order,
+using the first one found: wine, cxgames, cxoffice, cedega
 
 See also \fI\-\-cxinstalldir\fR.
 .IP "\fB\-b, \-\-bottle\fR \fI\s-1NAME\s0\fR" 4
@@ -86,6 +94,10 @@ installed from a rubygem the wwine manpage isn't placed anywhere
 in \fIman\fR\|(1)'s path, this will autodetect its location and issue man
 directly on the wwine.1 file (and thus work even when 'man wwine'
 does not).
+.IP "\fB\-\-debuginfo\fR" 4
+.IX Item "--debuginfo"
+Output information that is useful for bug reports and to provide if you
+need support.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 .IP "\fIwwine file.exe\fR" 4

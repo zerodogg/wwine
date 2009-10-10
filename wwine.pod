@@ -28,6 +28,10 @@ interface.
 For vanilla wine it uses WINEPREFIX to achieve bottle support,
 creating bottles as ~/.winebottle_[BOTTLE_NAME].
 
+When no --wine is explicitly supplied, wwine will use wine, or if that is
+not available, attempt to autodetect which flavour to use. See the information
+for --wine for more information.
+
 =head1 OPTIONS
 
 =over
@@ -42,6 +46,10 @@ Use the supplied flavour of wine. The default is to use vanilla wine.
 
 Possible parameters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
 cxo (alias for cxoffice) or /path/to/a/wine.binary
+
+If this parameter is not supplied, wwine will attempt to autodetect which
+wine to use, checking for the existance of flavours in the following order,
+using the first one found: wine, cxgames, cxoffice, cedega
 
 See also I<--cxinstalldir>.
 
