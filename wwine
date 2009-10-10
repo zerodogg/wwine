@@ -20,7 +20,7 @@ require 'getoptlong'
 # Application version
 $version = 0.1
 # The wine flavour to use
-$wine = 'wine'
+$wine = nil
 # The bottle to use
 $bottle = nil
 # Verbose mode (true/false)
@@ -315,6 +315,12 @@ def debugInfo ()
 		cxoVer = '(not present)'
 		cedegaVer = '(not present)'
 
+		defaultWine,defaultWCMD = getAutoWithParams(nil,false)
+		if defaultWine == nil
+			defaultWine = '(no wine found)'
+		end
+		printf(outFormat,'Default flavour',defaultWine)
+
 		if inPath('wine')
 			out = IO.popen('wine --version')
 			wineVer = out.readline
@@ -392,7 +398,7 @@ def handleException(ex)
 end
 
 # Purpose: Get parameters for wine
-def getWineWithParams (wine,bottle)
+def getWineWithParams (wine,bottle, missingIsFatal = true)
 	final = []
 	possibleWines = [ 'wine32','wine','wine64' ]
 	# If wine is not a path or does not exist, check for wine in the path
@@ -406,8 +412,12 @@ def getWineWithParams (wine,bottle)
 		end
 
 		if wine == nil
-			puts('"wine" does not appear to be installed')
-			exit(1)
+			if missingIsFatal == true
+				puts('"wine" does not appear to be installed')
+				exit(1)
+			else
+				return nil
+			end
 		end
 	end
 	final.push(wine)
@@ -500,12 +510,16 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 end
 
 # Purpose: Get parameters for cedega
-def getCedegaWithParams (wine,bottle)
+def getCedegaWithParams (wine,bottle, missingIsFatal = true)
 	final = []
 
 	if not inPath('cedega')
-		puts('cedega does not appear to be installed')
-		exit(1)
+		if missingIsFatal
+			puts('cedega does not appear to be installed')
+			exit(1)
+		else
+			return nil
+		end
 	end
 
 	final.push('cedega','--install')
@@ -519,29 +533,64 @@ def getCedegaWithParams (wine,bottle)
 	return final
 end
 
+# Purpose: Detect which wine to use and get parameters for that one
+# Returns: type,cmd
+def getAutoWithParams (bottle, missingIsFatal = true, returnFlavour = false)
+	cmd = getWineWithParams('wine',bottle,false)
+	type = 'wine'
+	if cmd == nil
+		cmd = getCXwithParams('cxgames',bottle,false)
+		type = 'cxgames'
+	end
+	if cmd == nil
+		cmd = getCXwithParams('cxoffice',bottle,false)
+		type = 'cxoffice'
+	end
+	if cmd == nil
+		cmd = getCedegaWithParams('cedega',bottle,false)
+		type = 'cedega'
+	end
+	if cmd == nil
+		if missingIsFatal
+			puts 'Failed to detect any wine version at all.'
+			exit(1)
+		else
+			return nil
+		end
+	else
+		return type,cmd
+	end
+end
+
 # Purpose: Run the wine specified, using the bottle specified and arguments specified
 def runWine (wine,bottle,args)
 	cmd = nil
-	# Expand cxg and cxo
-	if wine == 'cxg'
-		wine = 'cxgames'
-	elsif wine == 'cxo'
-		wine = 'cxoffice'
-	end
+	type = nil
 
-	type = wine
-
-	if wine == 'cxgames' || wine == 'cxoffice'
-		cmd = getCXwithParams(wine,bottle)
-	elsif wine == 'wine' || File.executable?(wine)
-		type = 'wine'
-		cmd = getWineWithParams(wine,bottle)
-	elsif wine == 'cedega'
-		cmd = getCedegaWithParams(wine,bottle)
+	if wine == nil
+		type,cmd = getAutoWithParams(bottle)
 	else
-		puts('Unknown --wine: '+wine)
-		puts('Must be one of: wine, cxgames, cxoffice, cedega, or the path to a wine executable')
-		exit(1)
+		# Expand cxg and cxo
+		if wine == 'cxg'
+			wine = 'cxgames'
+		elsif wine == 'cxo'
+			wine = 'cxoffice'
+		end
+
+		type = wine
+
+		if wine == 'cxgames' || wine == 'cxoffice'
+			cmd = getCXwithParams(wine,bottle)
+		elsif wine == 'wine' || File.executable?(wine)
+			type = 'wine'
+			cmd = getWineWithParams(wine,bottle)
+		elsif wine == 'cedega'
+			cmd = getCedegaWithParams(wine,bottle)
+		else
+			puts('Unknown --wine: '+wine)
+			puts('Must be one of: wine, cxgames, cxoffice, cedega, or the path to a wine executable')
+			exit(1)
+		end
 	end
 	cmd.concat(args)
 

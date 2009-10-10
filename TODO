@@ -2,6 +2,3 @@ TODO list for wwine in no particular order.
 
 --auto,-a mode. Autodetect and autocreate bottles depending
 on the location of the file.
-
-Fall back to attempts to detect various wine flavours
-if no --wine was supplied.
