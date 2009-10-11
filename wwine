@@ -475,6 +475,9 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	# If the dir does not exist, give up
 	if not cxdir
 		if $cxPath != nil
+			if !missingIsFatal
+				return nil
+			end
 			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
 			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
 		else
@@ -489,6 +492,9 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	# Find the bin
 	bin = cxdir+'/bin/cxstart'
 	if not File.executable?(bin)
+		if !missingIsFatal
+			return nil
+		end
 		puts(wine+': does not appear to be installed in '+cxdir)
 		exit(1)
 	end
