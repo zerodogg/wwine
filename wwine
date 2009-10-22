@@ -402,7 +402,10 @@ end
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle, missingIsFatal = true)
 	final = []
-	possibleWines = [ 'wine32','wine','wine64' ]
+	possibleWines = [ 'wine32','wine','wine64','wine.bin','wine.real' ]
+	# Manual search path, in the odd case none of the above are in $PATH.
+	# Ie. /usr/lib32/wine/wine.bin is the real wine binary on Debian
+	searchPath = [ '/usr/lib32/wine/','/usr/bin' ]
 	# If wine is not a path or does not exist, check for wine in the path
 	if !File.exists?(wine)
 		wine = nil
@@ -410,6 +413,20 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 			if inPath(w)
 				wine = w
 				break
+			end
+		end
+
+		if wine == nil
+			searchPath.each do |p|
+				possibleWines.each do |w|
+					if File.executable?(p+'/'+w) && File.file?(p+'/'+w)
+						wine = p+'/'+w
+						break
+					end
+				end
+				if wine != nil
+					break
+				end
 			end
 		end
 
@@ -480,6 +497,15 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 			end
 			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
 			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
+			if wine == 'cxgames'
+				reverse = 'cxoffice'
+			else
+				reverse = 'cxgames'
+			end
+			if File.exists?($cxPath+'/'+reverse) || File.exists?($cxPath+'/etc/'+reverse+'.conf')
+				puts('The directory looks like a '+reverse+' directory. Maybe you wanted')
+				puts('--wine '+reverse+' instead?')
+			end
 		else
 			if !missingIsFatal
 				return nil
