@@ -184,7 +184,8 @@ If this is not set, wwine will set it to -all when using -w wine.
 =item B<WINEPREFIX>
 
 wwine uses the WINEPREFIX environment variable to add bottle support when
-in -w wine mode. It will override any existing WINEPREFIX that is set.
+in -w wine mode. If WINEPREFIX is set and a --bottle is supplied, wwine will override
+the existing WINEPREFIX. If no bottle is supplied, wwine will respect WINEPREFIX.
 
 =back
 
