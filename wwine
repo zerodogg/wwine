@@ -183,7 +183,7 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	file.puts('# You should have received a copy of the GNU General Public License')
 	file.puts('# along with wwine. If not, see <http://www.gnu.org/licenses/>.')
 	file.puts('#')
-	file.puts('# The following two lines are used by wwine in features like "--from"')
+	file.puts('# The following two lines contain wwine metadata');
 	file.puts('# wwineInfo: v1 '+shellQuote(wwineInfo).join(' '))
 	file.puts('# wwineCmd: '+shellQuote(args).join(' '));
 	file.puts('')
