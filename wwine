@@ -17,6 +17,8 @@
 
 # Command-line parsing
 require 'getoptlong'
+# To read info for --debuginfo
+require 'open3'
 # Application version
 $version = 0.1
 # The wine flavour to use
@@ -265,8 +267,10 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 end
 
 # Purpose: Load wwine data from a wrapper script
-def loadWwineDataFromFile (file)
+def loadWwineDataFromFile (file,dryRun = false)
 	begin
+		puts 'Loading settings from '+file+':'
+		outFormat = '%-20s: %s'+"\n"
 		source = File.open(file)
 
 		wwineInfo = ''
@@ -309,7 +313,7 @@ def loadWwineDataFromFile (file)
 		end
 
 		if info[1] != 'nil'
-			puts 'Switching to directory: '+info[1]
+			printf(outFormat,'Switching to directory',info[1])
 			if File.exists?(info[1])
 				Dir.chdir(info[1])
 			else
@@ -320,21 +324,23 @@ def loadWwineDataFromFile (file)
 
 		if $wine == nil && info[2] != 'nil'
 			$wine = info[2]
-			puts 'Using --wine from file: '+$wine
+			printf(outFormat,'Using --wine',$wine)
 		end
 
 		if $bottle == nil && info[3] != 'nil'
 			$bottle = info[3]
-			puts 'Using --bottle from file: '+$bottle
+			printf(outFormat,'Using --bottle',$bottle)
 		end
 
 		if $cxPath == nil && info[4] != 'nil'
 			$cxPath = info[4]
-			puts 'Using --cxinstalldir from file: '+$cxPath
+			printf(outFormat,'Using --cxinstalldir',$cxPath)
 		end
 
-		puts 'Will now run: '+cmd.join(' ')
-		ARGV.unshift(*cmd)
+		if ! dryRun
+			printf(outFormat,'Will now run',cmd.join(' '))
+			ARGV.unshift(*cmd)
+		end
 	rescue => ex
 		handleException(ex)
 	end
@@ -421,10 +427,136 @@ def showManPage ()
 	puts '\curl -s "http://github.com/zerodogg/wwine/raw/master/wwine.1" |  groff -T utf8 -man | \less'
 end
 
+# Purpose: Get wine version
+def getWineVersion (source = 'wine', fromStderr = false)
+	wineVer = nil
+
+	# Don't try to get it if we have no wine to run
+	if inPath(source) || File.executable?(source)
+		begin
+			cmd = [ source,'--version' ]
+			Open3.popen3(*cmd) { |stdin, stdout, stderr|
+				# Fetch the line from either stderr or out
+				if fromStderr
+					wineVer = stderr.gets(nil)
+				else
+					wineVer = stdout.gets(nil)
+				end
+			}
+			# Get the actual version number by stripping away any leading nondigit text
+			wineVer.sub!(/^\D+/,'')
+			wineVer.chomp!
+		rescue
+			wineVer = nil
+		end
+	end
+	return wineVer
+end
+
+# Purpose: Get cedega version string
+def getCedegaVersionString ()
+	cedegaVer = nil
+
+	if inPath('cedega')
+		begin
+			# We need the HOME variable
+			if ENV.has_key?('HOME')
+				# The cedega RC file
+				rcFile = ENV['HOME']+'/.cedega/.cedegarc'
+				# The cedega build number file
+				uiBuildFile = ENV['HOME']+'/.cedega/.ui/BUILDNUMBER'
+				# If we have the rc file, open it and fetch the current default
+				# engine version from the 'default' setting. It is the closest we are
+				# going to get to a current version number without jumping through a lot
+				# of hoops.
+				if File.exists?(rcFile)
+					ind = File.open(rcFile)
+					ind.each do |line|
+						if line.match(/^default=/)
+							line.sub!(/^default=/,'')
+							line.chomp!
+							cedegaVer = line
+							break
+						end
+					end
+				end
+				# If we have a default ver, fetch the UI version as well, as we have to pass
+				# through the UI, that number can be useful
+				if cedegaVer != nil && File.exists?(uiBuildFile)
+					ind = File.open(uiBuildFile)
+					buildNo = ind.gets(nil)
+					buildNo.chomp!
+					if buildNo != nil
+						cedegaVer.concat(' (UI build '+buildNo+')');
+					end
+				end
+			end
+		rescue
+		end
+		if cedegaVer == nil
+			cedegaVer = 'present'
+		end
+	else
+		cedegaVer = '(not present)'
+	end
+
+	return cedegaVer
+end
+
+# Purpose: Get cx* version
+def getCXVersionsFrom (source,wantString = false)
+	cxVer = nil
+	cxwVer = nil
+	if source != nil 
+		begin
+			# Store the binfile for use later
+			binFile = source[0]
+			# pop off the dummy command
+			source.pop
+			# Add version
+			source.push('--version')
+			source = source.join(' ')
+
+			out = IO.popen(source)
+			# The info we need is on line two
+			cxVer = out.readline
+			cxVer = out.readline
+			# Get the actual version number by stripping away any leading nondigit text
+			cxVer.sub!(/^\D+/,'')
+			cxVer.chomp!
+
+			cxwVer = getWineVersion(binFile.sub(/cxstart$/,'wineserver'),true)
+		rescue
+			cxwVer = nil
+			cxVer = nil
+		end
+	end
+	if wantString
+		# If a string has been requested, generate one and return it
+		if cxVer != nil
+			if cxwVer != nil
+				return cxVer+' (based on wine '+cxwVer+')'
+			else
+				return cxVer
+			end
+		else
+			return '(not present)'
+		end
+	else
+		return cxVer,cxwVer
+	end
+end
+
 # Purpose: Print debugging info
 def debugInfo ()
 	outFormat = '%-20s: %s'+"\n"
 	puts "wwine "+$version.to_s
+	# Load a --from file if it is set
+	if $wwineDataFrom
+		loadWwineDataFromFile($wwineDataFrom,true)
+	end
+	# Fetch the md5sum of us. This will at least give a certain clue about the revision
+	# of wwine used. Primarily useful for identifying older git clones in bug reports.
 	begin
 		if inPath('md5sum')
 			outStr = nil
@@ -441,10 +573,6 @@ def debugInfo ()
 	end
 
 	begin
-		wineVer = '(not present)'
-		cxgVer = '(not present)'
-		cxoVer = '(not present)'
-		cedegaVer = '(not present)'
 
 		defaultWine,defaultWCMD = getAutoWithParams(nil,false)
 		if defaultWine == nil
@@ -453,59 +581,21 @@ def debugInfo ()
 		printf(outFormat,'Default flavour',defaultWine)
 
 		if inPath('wine')
-			out = IO.popen('wine --version')
-			wineVer = out.readline
-			wineVer.chomp!
-			wineVer.sub!(/wine-/,'')
+			wineVer = getWineVersion()
+		else
+			wineVer = '(not present)'
 		end
 		printf(outFormat,'Wine',wineVer)
 
 		cxgBin = getCXwithParams('cxgames',nil,false)
-		if cxgBin != nil 
-			cxgBin.pop
-			cxgBin.push('--version')
-			cxgBin = cxgBin.join(' ')
-
-			out = IO.popen(cxgBin)
-			cxgVer = out.readline
-			cxgVer = out.readline
-			cxgVer.sub!(/\s*Public\s*Version:\s+/,'')
-			cxgVer.chomp!
-		end
+		cxgVer = getCXVersionsFrom(cxgBin,true)
 		printf(outFormat,'Crossover Games',cxgVer)
 
-		cxoBin = getCXwithParams('cxgames',nil,false)
-		if cxoBin != nil 
-			cxoBin.pop
-			cxoBin.push('--version')
-			cxoBin = cxoBin.join(' ')
-
-			out = IO.popen(cxoBin)
-			cxoVer = out.readline
-			cxoVer = out.readline
-			cxoVer.sub!(/\s*Public\s*Version:\s+/,'')
-			cxoVer.chomp!
-		end
+		cxoBin = getCXwithParams('cxoffice',nil,false)
+		cxoVer = getCXVersionsFrom(cxoBin,true)
 		printf(outFormat,'Crossover Office',cxoVer)
 
-		if inPath('cedega')
-			cedegaVer = 'present'
-
-			if ENV.has_key?('HOME')
-				rcFile = ENV['HOME']+'/.cedega/.cedegarc'
-				if File.exists?(rcFile)
-					ind = File.open(ENV['HOME']+'/.cedega/.cedegarc')
-					ind.each do |line|
-						if line.match(/^default=/)
-							line.sub!(/^default=/,'')
-							line.chomp!
-							cedegaVer = line
-							break
-						end
-					end
-				end
-			end
-		end
+		cedegaVer = getCedegaVersionString()
 		printf(outFormat,'Cedega',cedegaVer)
 	rescue => ex
 		handleException(ex)
