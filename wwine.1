@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2009-10-27" "wwine 0.1" ""
+.TH WWINE 1 "2009-11-03" "wwine 0.1" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -21,7 +21,7 @@ installed using crossover will be manageable through the usual crossover
 interface.
 .PP
 For vanilla wine it uses \s-1WINEPREFIX\s0 to achieve bottle support,
-creating bottles as ~/.winebottle_[\s-1BOTTLE_NAME\s0].
+creating bottles as ~/.wwinebottles/[\s-1BOTTLE_NAME\s0].
 .PP
 When no \-\-wine is explicitly supplied, wwine will use wine, or if that is
 not available, attempt to autodetect which flavour to use. See the information
@@ -48,7 +48,7 @@ See also \fI\-\-cxinstalldir\fR.
 .IX Item "-b, --bottle NAME"
 Use the bottle with the name supplied. For cxgames, cxoffice or cedega
 it uses the flavours builtin bottle support. For vanilla wine it sets
-\&\s-1WINEPREFIX\s0 to use ~/.winebottle_\fI\s-1NAME\s0\fR. It defaults to no bottle,
+\&\s-1WINEPREFIX\s0 to use ~/.wwinebottles/<\s-1NAME\s0>. It defaults to no bottle,
 in which case vanilla wine will use ~/.wine, cxoffice/cxgames will
 use the bottle defined as default and for cedega a bottle named 'wwineFolder'
 will be used.

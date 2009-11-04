@@ -26,7 +26,7 @@ installed using crossover will be manageable through the usual crossover
 interface.
 
 For vanilla wine it uses WINEPREFIX to achieve bottle support,
-creating bottles as ~/.winebottle_[BOTTLE_NAME].
+creating bottles as ~/.wwinebottles/[BOTTLE_NAME].
 
 When no --wine is explicitly supplied, wwine will use wine, or if that is
 not available, attempt to autodetect which flavour to use. See the information
@@ -58,7 +58,7 @@ See also I<--cxinstalldir>.
 
 Use the bottle with the name supplied. For cxgames, cxoffice or cedega
 it uses the flavours builtin bottle support. For vanilla wine it sets
-WINEPREFIX to use ~/.winebottle_I<NAME>. It defaults to no bottle,
+WINEPREFIX to use ~/.wwinebottles/<NAME>. It defaults to no bottle,
 in which case vanilla wine will use ~/.wine, cxoffice/cxgames will
 use the bottle defined as default and for cedega a bottle named 'wwineFolder'
 will be used.

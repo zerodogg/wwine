@@ -382,7 +382,7 @@ def Help ()
 	puts ""
 	printHelp('-h','--help','Display this help text')
 	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
-	printHelp('-b','--bottle','Use the selected bottle (~/.winebottle_[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
+	printHelp('-b','--bottle','Use the selected bottle (~/.wwinebottles/[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
 	printHelp('','--drykill','Print what --kill would have done, but don\'t actually do anything')
 	printHelp('-c','--cxinstalldir','Use the supplied path as the install path for CXoffice/CXgames (default: autodetect).')
@@ -428,13 +428,13 @@ def showManPage ()
 end
 
 # Purpose: Get wine version
-def getWineVersion (source = 'wine', fromStderr = false)
+def getWineVersion (source = 'wine', fromStderr = false, cmdOpt = '--version')
 	wineVer = nil
 
 	# Don't try to get it if we have no wine to run
 	if inPath(source) || File.executable?(source)
 		begin
-			cmd = [ source,'--version' ]
+			cmd = [ source,cmdOpt ]
 			Open3.popen3(*cmd) { |stdin, stdout, stderr|
 				# Fetch the line from either stderr or out
 				if fromStderr
@@ -525,7 +525,7 @@ def getCXVersionsFrom (source,wantString = false)
 			cxVer.sub!(/^\D+/,'')
 			cxVer.chomp!
 
-			cxwVer = getWineVersion(binFile.sub(/cxstart$/,'wineserver'),true)
+			cxwVer = getWineVersion(binFile.sub(/cxstart$/,'wineserver'),true,'-v')
 		rescue
 			cxwVer = nil
 			cxVer = nil
@@ -666,7 +666,16 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 			warn 'WINEPREFIX= was already set, overriding it.'
 		end
 		if ! (bottle =~ /^\.?\//)
-			bottle = ENV['HOME']+'/.winebottle_'+bottle
+			bottle = ENV['HOME']+'/.wwinebottles/'+bottle
+			if !File.exists?(ENV['HOME']+'/.winebottles/')
+				begin
+					Dir.mkdir(ENV['HOME']+'/.winebottles/')
+				rescue SystemCallError
+					puts('Failed to create directory "'+ENV['HOME']+'/.winebottles/'+": "+$!)
+					puts('Unable to continue.')
+					exit(1)
+				end
+			end
 		end
 		ENV['WINEPREFIX'] = bottle
 		vputs('Set WINEPREFIX='+bottle)
