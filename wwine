@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 # wwine
-# Copyright (C) Eskild Hustvedt 2009
+# Copyright (C) Eskild Hustvedt 2009, 2010
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -704,7 +704,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	end
 
 	wines.each do |path|
-		if File.exists?(path)
+		if File.exists?(path) and File.executable(path+'/bin/cxstart')
 			cxdir = path
 			break
 		end
@@ -742,15 +742,6 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 		exit(1)
 	end
 
-	# Find the bin
-	bin = cxdir+'/bin/cxstart'
-	if not File.executable?(bin)
-		if !missingIsFatal
-			return nil
-		end
-		puts(wine+': does not appear to be installed in '+cxdir)
-		exit(1)
-	end
 	final.push(cxdir+'/bin/cxstart')
 	if(bottle != nil && bottle.length > 0)
 		final.push('--bottle',bottle)
