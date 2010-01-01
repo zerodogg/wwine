@@ -719,10 +719,10 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 
 	# If the dir does not exist, give up
 	if not cxdir
+		if !missingIsFatal
+			return nil
+		end
 		if $cxPath != nil
-			if !missingIsFatal
-				return nil
-			end
 			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
 			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
 			if wine == 'cxgames'
@@ -735,10 +735,9 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 				puts('--wine '+reverse+' instead?')
 			end
 		else
-			if !missingIsFatal
-				return nil
-			end
 			puts('Failed to locate '+wine)
+			puts('You could try to explicitly tell wwine where '+wine+' is installed')
+			puts('by supplying --cxinstalldir')
 		end
 		exit(1)
 	end
