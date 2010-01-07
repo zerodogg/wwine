@@ -704,7 +704,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	end
 
 	wines.each do |path|
-		if File.exists?(path) and File.executable(path+'/bin/cxstart')
+		if File.exists?(path) and File.executable?(path+'/bin/cxstart')
 			cxdir = path
 			break
 		end
