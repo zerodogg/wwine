@@ -45,7 +45,7 @@ def killWine (dryRun = false)
 	# Go through each line in the 'ps' output
 	wines.each do |line|
 		line.chomp!
-		# Ignore the ehader
+		# Ignore the header
 		if line =~ /USER\s*PID/
 			next
 		end
@@ -67,12 +67,17 @@ def killWine (dryRun = false)
 			# path because it has already matched one of the above) or exe/dll.
 			if ! name =~ /wine/i && ( name =~ /\// || ! name =~ /\.(exe|dll)/i )
 				next
-			# Ignore mono and vim
-			elsif name =~ /wwine/i || name =~ /(mono|vim)/i
-				next
 			end
 		else
 			next
+		end
+		# At least on Linux kernels, /proc/ will include useful info, we use it to
+		# check if the exe actually is wine
+		if File.exists?('/proc/'+pid+'/exe') and File.symlink?('/proc/'+pid+'/exe')
+			linkValue = File.readlink('/proc/'+pid+'/exe')
+			if File.readlink('/proc/'+pid+'/exe') !~ /wine/i
+				next
+			end
 		end
 		# Clean up the name
 		name.sub!(/\s*$/,'')
