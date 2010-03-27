@@ -67,6 +67,9 @@ will be used.
 
 Attempt to kill all running wine processes. See also I<--drykill>
 
+The default signal is SIGTERM, however you can supply any signal number
+you want (ie. "wwine -k9").
+
 =item B<--drykill>
 
 Print what I<--kill> would have done, without actually doing anything.

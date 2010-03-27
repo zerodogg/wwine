@@ -37,11 +37,33 @@ $wrapperCwd = nil
 $wwineDataFrom = nil
 
 # Purpose: Attempt to kill all running wine processes
-def killWine (dryRun = false)
+def killWine (dryRun = false, signal = 15)
 	# Open a pipe to ps to read processes
 	wines = IO.popen('ps uxw')
 	# True if we have killed something
 	killed = false
+	# The name of the signal being sent
+	sigName = 'SIGTERM'
+	# Get an integer version of signal parameter
+	begin
+		signal = Integer(signal)
+	rescue
+		signal = nil
+	end
+	# If the signal parameter is invalid, error out
+	if signal == nil
+		signal = 15
+	elsif signal > 15 || signal < 0
+		puts('Argument to --kill must be an integer between 0-15 (or none at all)')
+		exit(1)
+	end
+	# Map of number => name
+	sigNames = { 9 => 'SIGKILL', 15 => 'SIGTERM', 2 => 'SIGINT' }
+	if sigNames[signal] != nil
+		sigName = sigNames[signal]
+	else
+		sigName = 'signal '+signal
+	end
 	# Go through each line in the 'ps' output
 	wines.each do |line|
 		line.chomp!
@@ -83,10 +105,14 @@ def killWine (dryRun = false)
 		name.sub!(/\s*$/,'')
 		# Send SIGTERM (or output information if in dryRun mode)
 		if !dryRun
-			puts 'Sending SIGTERM to '+name+' (PID '+pid+')'
-			Process.kill(15,pid.to_i)
+			puts 'Sending '+sigName+' to '+name+' (PID '+pid+')'
+			begin
+				Process.kill(signal,pid.to_i)
+			rescue 
+				puts('Error while attempting to send signal to '+pid+': '+$!)
+			end
 		else
-			puts 'Would send SIGTERM to '+name+' (PID '+pid+')'
+			puts 'Would send '+sigName+' to '+name+' (PID '+pid+')'
 		end
 		killed = true
 	end
@@ -864,7 +890,7 @@ opts = GetoptLong.new(
 	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 	[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--kill', '-k', GetoptLong::NO_ARGUMENT ],
+	[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
 	[ '--drykill', GetoptLong::NO_ARGUMENT ],
 	[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--version',GetoptLong::NO_ARGUMENT ],
@@ -896,7 +922,7 @@ begin
 			debugInfo()
 		when '--kill'
 			begin
-				killWine()
+				killWine(false,arg)
 			rescue
 				puts "Error while attempting to kill processes: "+$!
 			end
@@ -904,7 +930,7 @@ begin
 		when '--cxinstalldir'
 			$cxPath = arg
 		when '--version'
-			puts('wwine version '+$version.to_s)
+			puts('wwine version '+$version.to_s+' (for wine version info, run wwine --debuginfo)')
 			exit(0)
 		when '--wrap'
 			$wrapperPath = arg
