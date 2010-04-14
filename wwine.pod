@@ -237,7 +237,7 @@ B<wwine> is written by Eskild Hustvedt <I<code at zerodogg dot org>>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) Eskild Hustvedt 2009
+Copyright (C) Eskild Hustvedt 2009, 2010
 
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
