@@ -8,4 +8,4 @@ installed using crossover will be managable through the usual crossover
 interface.
 
 For vanilla wine it uses WINEPREFIX to achieve bottle support,
-creating bottles as ~/.winebottle_[BOTTLE_NAME].
+creating bottles as ~/.wwinebottles/[BOTTLE_NAME]
