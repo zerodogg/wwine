@@ -11,6 +11,6 @@ Gem::Specification.new do |s|
   s.bindir = '.'
   s.executables = [ 'wwine' ]
   s.homepage = %q{http://random.zerodogg.org/wwine}
-  s.summary = %q{wwine is a simpe wine wrapper.}
+  s.summary = %q{wwine is a simple wine wrapper.}
   s.description = s.summary
 end
