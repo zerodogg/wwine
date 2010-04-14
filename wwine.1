@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2009-11-03" "wwine 0.1" ""
+.TH WWINE 1 "2010-04-14" "wwine 0.1" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -55,6 +55,9 @@ will be used.
 .IP "\fB\-k, \-\-kill\fR" 4
 .IX Item "-k, --kill"
 Attempt to kill all running wine processes. See also \fI\-\-drykill\fR
+
+The default signal is \s-1SIGTERM\s0, however you can supply any signal number
+you want (ie. \*(L"wwine \-k9\*(R").
 .IP "\fB\-\-drykill\fR" 4
 .IX Item "--drykill"
 Print what \fI\-\-kill\fR would have done, without actually doing anything.
@@ -150,7 +153,12 @@ using the parameters specified in ~/bin/startFile, with the exception of
 is the file created by the above example).
 .IP "\fIwwine \-k\fR" 4
 .IX Item "wwine -k"
-Will make wwine attempt to kill all running wine processes on this system.
+Will make wwine attempt to kill all running wine processes on this system by
+sending them the \s-1TERM\s0 signal.
+.IP "\fIwwine \-k9\fR" 4
+.IX Item "wwine -k9"
+Will make wwine attempt to kill all running wine processes on this system by
+sending them the \s-1KILL\s0 signal. Should only be used if \*(L"wwine \-k\*(R" fails.
 .SH "DEPENDENCIES"
 .IX Header "DEPENDENCIES"
 Requires at least one of wine, cxoffice, cxgames or cedega.
@@ -177,7 +185,8 @@ by wwine when in \-\-verbose mode.
 If you need help or support please visit the website at <http://random.zerodogg.org/wwine>
 .SH "BUGS AND LIMITATIONS"
 .IX Header "BUGS AND LIMITATIONS"
-If you find a bug, please report it at <http://random.zerodogg.org/wwine/bugs>
+If you find a bug, please report it at <http://random.zerodogg.org/wwine/bugs>. You may
+submit feature requests there as well.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 \&\fBwwine\fR is written by Eskild Hustvedt <\fIcode at zerodogg dot org\fR>

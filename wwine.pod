@@ -183,7 +183,13 @@ is the file created by the above example).
 
 =item I<wwine -k>
 
-Will make wwine attempt to kill all running wine processes on this system.
+Will make wwine attempt to kill all running wine processes on this system by
+sending them the TERM signal.
+
+=item I<wwine -k9>
+
+Will make wwine attempt to kill all running wine processes on this system by
+sending them the KILL signal. Should only be used if "wwine -k" fails.
 
 =back
 
@@ -222,7 +228,8 @@ If you need help or support please visit the website at L<http://random.zerodogg
 
 =head1 BUGS AND LIMITATIONS
 
-If you find a bug, please report it at L<http://random.zerodogg.org/wwine/bugs>
+If you find a bug, please report it at L<http://random.zerodogg.org/wwine/bugs>. You may
+submit feature requests there as well.
 
 =head1 AUTHOR
 
