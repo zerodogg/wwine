@@ -698,11 +698,12 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 		end
 		if ! (bottle =~ /^\.?\//)
 			bottle = ENV['HOME']+'/.wwinebottles/'+bottle
-			if !File.exists?(ENV['HOME']+'/.winebottles/')
+			if !File.exists?(ENV['HOME']+'/.wwinebottles/')
+				vputs(ENV['HOME']+'/.wwinebottles/: does not exist, creating')
 				begin
-					Dir.mkdir(ENV['HOME']+'/.winebottles/')
+					Dir.mkdir(ENV['HOME']+'/.wwinebottles/')
 				rescue SystemCallError
-					puts('Failed to create directory "'+ENV['HOME']+'/.winebottles/'+": "+$!)
+					puts('Failed to create directory "'+ENV['HOME']+'/.wwinebottles/'+": "+$!)
 					puts('Unable to continue.')
 					exit(1)
 				end
