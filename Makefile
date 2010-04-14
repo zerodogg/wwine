@@ -1,6 +1,6 @@
 # wwine makefile
 
-VERSION=$(shell ./wwine --version|perl -pi -e 's/^\D+//; chomp')
+VERSION=$(shell ./wwine --version|head -n1|perl -pi -e 's/^\D+//; s/\s.*$$//; chomp')
 
 ifndef prefix
 # This little trick ensures that make install will succeed both for a local
