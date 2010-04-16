@@ -332,7 +332,7 @@ def loadWwineDataFromFile (file,dryRun = false)
 
 		if info[0] != 'v1'
 			puts "This version of wwine only supports info format v1."
-			puts "This file is verison "+info[0]
+			puts "This file is version "+info[0]
 			puts "Unable to continue."
 			exit(0)
 		end
@@ -643,7 +643,7 @@ def handleException(ex)
 	puts()
 	puts('An exception has occurred and wwine can not continue.')
 	puts('This almost certainly reflects a bug in wwine.')
-	puts('Please check that you have the latest version off wwine,')
+	puts('Please check that you have the latest version of wwine,')
 	puts('and if you do, report this issue along with the text between the "---" above');
 	puts('to http://random.zerodogg.org/wwine/bugs')
 	exit(1)
