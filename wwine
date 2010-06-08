@@ -87,7 +87,7 @@ def killWine (dryRun = false, signal = 15)
 			# If wine is not a part of the process name, check if the
 			# name either includes a \ (which most likely means it is a windows
 			# path because it has already matched one of the above) or exe/dll.
-			if ! name =~ /wine/i && ( name =~ /\// || ! name =~ /\.(exe|dll)/i )
+			if name !~ /wine/i && (name !~ /\// || name !~ /\.(exe|dll)/i)
 				next
 			end
 		else
@@ -95,9 +95,18 @@ def killWine (dryRun = false, signal = 15)
 		end
 		# At least on Linux kernels, /proc/ will include useful info, we use it to
 		# check if the exe actually is wine
-		if File.exists?('/proc/'+pid+'/exe') and File.symlink?('/proc/'+pid+'/exe')
+
+			# /exe test
+		if File.readable?('/proc/'+pid+'/exe') and File.symlink?('/proc/'+pid+'/exe')
 			linkValue = File.readlink('/proc/'+pid+'/exe')
-			if File.readlink('/proc/'+pid+'/exe') !~ /wine/i
+			if File.readlink('/proc/'+pid+'/exe') !~ /\/[^\/]*wine[^\/]*$/i
+				next
+			end
+			# /cmdline test (for when /exe isn't readable)
+		elsif File.readable?('/proc/'+pid+'/cmdline')
+			cmdline = IO.read('/proc/'+pid+'/cmdline')
+			cmdline.sub!(/\0.*/,'');
+			if cmdline !~ /\/[^\/]*wine[^\/]*$/i && cmdline !~ /^[A-Z]:\\[^\\]+\\/
 				next
 			end
 		end
