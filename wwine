@@ -83,11 +83,11 @@ def killWine (dryRun = false, signal = 15)
 			next
 		end
 		# Ignore processes that are not wine-related
-		if name =~ /(wine|windows|[a-z]:\\|\.(exe|dll))/i
+		if name =~ /(wine|windows|[A-Za-z]:\\|\.(exe|dll))/i
 			# If wine is not a part of the process name, check if the
-			# name either includes a \ (which most likely means it is a windows
+			# name either includes a *:\ (which most likely means it is a windows
 			# path because it has already matched one of the above) or exe/dll.
-			if name !~ /wine/i && (name !~ /\// || name !~ /\.(exe|dll)/i)
+			if name !~ /wine/i && (name !~ /[A-Za-z]:\\/ || name !~ /\.(exe|dll)/i)
 				next
 			end
 		else
@@ -106,7 +106,7 @@ def killWine (dryRun = false, signal = 15)
 		elsif File.readable?('/proc/'+pid+'/cmdline')
 			cmdline = IO.read('/proc/'+pid+'/cmdline')
 			cmdline.sub!(/\0.*/,'');
-			if cmdline !~ /\/[^\/]*wine[^\/]*$/i && cmdline !~ /^[A-Z]:\\[^\\]+\\/
+			if cmdline !~ /\/[^\/]*wine[^\/]*$/i && cmdline !~ /^[A-Za-z]:\\[^\\]+\\/
 				next
 			end
 		end
