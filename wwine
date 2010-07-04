@@ -20,7 +20,7 @@ require 'getoptlong'
 # To read info for --debuginfo
 require 'open3'
 # Application version
-$version = '0.1.1'
+$version = '0.1.2'
 # The wine flavour to use
 $wine = nil
 # The bottle to use
@@ -66,6 +66,13 @@ def killWine (dryRun = false, signal = 15)
 	end
 	# Go through each line in the 'ps' output
 	wines.each do |line|
+		# True if we *require* /proc to be read for this process.
+		# This is for cases where, judging by the process name we shouldn't
+		# kill that process, but it's close enough to something we could kill
+		# that we want to check if /proc can provide a more definitive answer.
+		# (helps kill defunct processes)
+		requireProc = false
+
 		line.chomp!
 		# Ignore the header
 		if line =~ /USER\s*PID/
@@ -88,7 +95,7 @@ def killWine (dryRun = false, signal = 15)
 			# name either includes a *:\ (which most likely means it is a windows
 			# path because it has already matched one of the above) or exe/dll.
 			if name !~ /wine/i && (name !~ /[A-Za-z]:\\/ || name !~ /\.(exe|dll)/i)
-				next
+				requireProc = true
 			end
 		else
 			next
@@ -109,6 +116,8 @@ def killWine (dryRun = false, signal = 15)
 			if cmdline !~ /\/[^\/]*wine[^\/]*$/i && cmdline !~ /^[A-Za-z]:\\[^\\]+\\/
 				next
 			end
+		elsif requireProc
+			next
 		end
 		# Clean up the name
 		name.sub!(/\s*$/,'')
@@ -309,6 +318,13 @@ end
 # Purpose: Load wwine data from a wrapper script
 def loadWwineDataFromFile (file,dryRun = false)
 	begin
+		if !File.exists?(file)
+			puts file+': does not exist'
+			exit(1)
+		elsif ! File.readable?(file)
+			puts file+': is not readable'
+			exit(1)
+		end
 		puts 'Loading settings from '+file+':'
 		outFormat = '%-20s: %s'+"\n"
 		source = File.open(file)

@@ -1,3 +1,8 @@
+Version 0.1.2
+- Fixed a problem where wwine would not check for file existance
+	when using --from
+- Minor improvements to --kill
+
 Version 0.1.1
 - Fixed an issue where --kill could kill the wrong process when
 	/proc/<pid>/exe was not readable
