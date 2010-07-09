@@ -108,7 +108,7 @@ were in at the time the wrapper script was created.
 Load parameters from the wwine wrapper script (as created by I<--wrap>)
 located at I<PATH>. wwine will act as though the wrapper script had been
 run, with one important difference, any additional command-line arguments
-supplied to wwine wil override settings from the wrapper script.
+supplied to wwine will override settings from the wrapper script.
 
 This can be useful if you have a wrapper script set up to use cxgames,
 but want to give a one off attempt at using wine. In such a case you could
@@ -132,8 +132,7 @@ does not).
 
 =item B<--debuginfo>
 
-Output information that is useful for bug reports and to provide if you
-need support.
+Output information that is useful in bug reports, or when requesting support.
 
 =back
 
