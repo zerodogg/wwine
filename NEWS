@@ -1,4 +1,7 @@
 Version 0.1.2
+- Made messages that gets output when using --from with --wrap
+	more correct
+- Changed default cx bottle to match that used by wine
 - Fixed a problem where wwine would not check for file existance
 	when using --from
 - Minor improvements to --kill

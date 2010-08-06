@@ -329,6 +329,12 @@ def loadWwineDataFromFile (file,dryRun = false)
 		outFormat = '%-20s: %s'+"\n"
 		source = File.open(file)
 
+		if $wrapperPath
+			outMessage = ''
+		else
+			outMessage = 'Using '
+		end
+
 		wwineInfo = ''
 		wwineCmd = ''
 
@@ -369,7 +375,12 @@ def loadWwineDataFromFile (file,dryRun = false)
 		end
 
 		if info[1] != 'nil'
-			printf(outFormat,'Switching to directory',info[1])
+			if $wrapperPath
+				switchMessage = '--wrapdir'
+			else
+				switchMessage = 'Switching to directory'
+			end
+			printf(outFormat,switchMessage,info[1])
 			if File.exists?(info[1])
 				Dir.chdir(info[1])
 			else
@@ -380,21 +391,26 @@ def loadWwineDataFromFile (file,dryRun = false)
 
 		if $wine == nil && info[2] != 'nil'
 			$wine = info[2]
-			printf(outFormat,'Using --wine',$wine)
+			printf(outFormat,outMessage+'--wine',$wine)
 		end
 
 		if $bottle == nil && info[3] != 'nil'
 			$bottle = info[3]
-			printf(outFormat,'Using --bottle',$bottle)
+			printf(outFormat,outMessage+'--bottle',$bottle)
 		end
 
 		if $cxPath == nil && info[4] != 'nil'
 			$cxPath = info[4]
-			printf(outFormat,'Using --cxinstalldir',$cxPath)
+			printf(outFormat,outMessage+'--cxinstalldir',$cxPath)
 		end
 
 		if ! dryRun
-			printf(outFormat,'Will now run',cmd.join(' '))
+			if $wrapperPath
+				out = 'Program command'
+			else
+				out = 'Will now run'
+			end
+			printf(outFormat,out,cmd.join(' '))
 			ARGV.unshift(*cmd)
 		end
 	rescue => ex
@@ -808,7 +824,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	# Create the bottle if it does not exist
 	if bottle != nil and ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
 		puts 'The bottle '+bottle+' did not exist, creating...'
-		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create'],'system')
+		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
 		if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
 			puts 'Bottle creation failed.'
 			exit 1
