@@ -374,7 +374,7 @@ def loadWwineDataFromFile (file,dryRun = false)
 			exit(0)
 		end
 
-		if info[1] != 'nil'
+		if info[1] != 'nil' && !$wrapperCwd
 			if $wrapperPath
 				switchMessage = '--wrapdir'
 			else
@@ -382,7 +382,11 @@ def loadWwineDataFromFile (file,dryRun = false)
 			end
 			printf(outFormat,switchMessage,info[1])
 			if File.exists?(info[1])
-				Dir.chdir(info[1])
+				if $wrapperPath
+					$wrapperCwd = info[1]
+				else
+					Dir.chdir(info[1])
+				end
 			else
 				puts info[1]+': does not exist, giving up.'
 				exit(0)

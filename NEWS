@@ -4,6 +4,8 @@ Version 0.1.2
 - Changed default cx bottle to match that used by wine
 - Fixed a problem where wwine would not check for file existance
 	when using --from
+- Fixed a bug that could cause --wrap to output the file to the
+	wrong directory when used in conjunction with --from
 - Minor improvements to --kill
 
 Version 0.1.1
