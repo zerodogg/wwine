@@ -61,4 +61,4 @@ gem: clean test $(TESTGEM)
 	gem build wwine.gemspec
 testgem:
 	if ! grep '"$(VERSION)"' wwine.gemspec 2>&1 >/dev/null; then echo;echo "Update s.version in wwine.gemspec";exit 1;fi
-	if ! grep '"$(shell date +%Y-%m-%d)"' wwine.gemspec 2>&1 >/dev/null; then echo;echo "Update s.date in wwine.gemspec";exit 1;fi
+	if ! grep '$(shell date +%Y-%m-%d)' wwine.gemspec 2>&1 >/dev/null; then echo;echo "Update s.date in wwine.gemspec";exit 1;fi
