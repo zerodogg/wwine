@@ -264,16 +264,10 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	puts('Wrote wrapper script to '+targetFile)
 end
 
-# Purpose: Prepare to generate a wrapper script
-def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
+# Purpose: Generate a wwine command and wwineInfo array
+def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	wwineCmd = []
 	wwineInfo = ['nil','nil','nil','nil']
-
-	if File.exists?(targetFile)
-		puts(targetFile+': already exists. Bailing out')
-		puts('Remove the target file first, then try again')
-		exit(1)
-	end
 
 	# Generate a wwine command-line
 	if $verbose
@@ -291,6 +285,20 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 		wwineCmd.push('--bottle',bottle)
 		wwineInfo[2] = bottle;
 	end
+	return wwineCmd, wwineInfo
+end
+
+# Purpose: Prepare to generate a wrapper script
+def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
+
+	if File.exists?(targetFile)
+		puts(targetFile+': already exists. Bailing out')
+		puts('Remove the target file first, then try again')
+		exit(1)
+	end
+
+	wwineCmd, wwineInfo = generateWwineCmd(wine,bottle,wineCommand,type)
+
 	# Append -- if it isn't already
 	if ! args.join(' ').match(/ -- /)
 		wwineCmd.push('--')
