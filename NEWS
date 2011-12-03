@@ -1,3 +1,8 @@
+Version 0.2
+- Added an --env parameter, makes wwine set the WINE and WINEPREFIX
+   variables for another program to use
+- Improved escaping of ' in --wrap(ped) scripts
+
 Version 0.1.2
 - Made messages that gets output when using --from with --wrap
 	more correct
