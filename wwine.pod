@@ -74,6 +74,28 @@ you want (ie. "wwine -k9").
 
 Print what I<--kill> would have done, without actually doing anything.
 
+=item B<--env>
+
+B<--env> causes wwine to set the WINE and WINEPREFIX environment
+variables, and (optionally) run a native program with those variables
+set. This lets you run any program that uses the WINE and WINEPREFIX
+variables with wwine instead of wine (effectively giving you bottle
+support, as well as support for using cxgames/cxoffice/.. instead
+of wine).
+
+When you use --env, wwine will obey --bottle and --wine (or --from) and set
+WINE and WINEPREFIX accordingly. If you supply additional parameters, then
+wwine will run that command, otherwise it will output the variables that would
+have been set.
+
+See the EXAMPLES section for an example of how to use winetricks
+with cxgames using wwine's B<--env>
+
+=item B<--env-bottle>
+
+This option is primarily for internal use. It causes wwine to parse which
+--bottle to use from the WINEPREFIX variable.
+
 =item B<-c, --cxinstalldir> I<PATH>
 
 Use the supplied path as the path to either a crossover office/games install
@@ -179,6 +201,14 @@ This causes wwine to run the command specified in ~/bin/startFile
 using the parameters specified in ~/bin/startFile, with the exception of
 --wine, which would be wine instead of cxgames (here assuming this
 is the file created by the above example).
+
+=item I<wwine -w cxg -b file --env -- winetricks --no-isolate vcrun6>
+
+This causes wwine to set the environment variables WINE and WINEPREFIX,
+and then execute the command supplied. In this case it would run
+winetricks, which would be told to install "vcrun6". Because it is running
+under wwine's --env parameter, winetricks will use wwine to perform
+the actions, thus allowing you to use winetricks with cxgames.
 
 =item I<wwine -k>
 

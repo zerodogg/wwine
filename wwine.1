@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2010-07-07" "wwine 0.1.2" ""
+.TH WWINE 1 "2011-12-03" "wwine 0.2" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -61,6 +61,26 @@ you want (ie. \*(L"wwine \-k9\*(R").
 .IP "\fB\-\-drykill\fR" 4
 .IX Item "--drykill"
 Print what \fI\-\-kill\fR would have done, without actually doing anything.
+.IP "\fB\-\-env\fR" 4
+.IX Item "--env"
+\&\fB\-\-env\fR causes wwine to set the \s-1WINE\s0 and \s-1WINEPREFIX\s0 environment
+variables, and (optionally) run a native program with those variables
+set. This lets you run any program that uses the \s-1WINE\s0 and \s-1WINEPREFIX\s0
+variables with wwine instead of wine (effectively giving you bottle
+support, as well as support for using cxgames/cxoffice/.. instead
+of wine).
+
+When you use \-\-env, wwine will obey \-\-bottle and \-\-wine (or \-\-from) and set
+\&\s-1WINE\s0 and \s-1WINEPREFIX\s0 accordingly. If you supply additional parameters, then
+wwine will run that command, otherwise it will output the variables that would
+have been set.
+
+See the \s-1EXAMPLES\s0 section for an example of how to use winetricks
+with cxgames using wwine's \fB\-\-env\fR
+.IP "\fB\-\-env\-bottle\fR" 4
+.IX Item "--env-bottle"
+This option is primarily for internal use. It causes wwine to parse which
+\&\-\-bottle to use from the \s-1WINEPREFIX\s0 variable.
 .IP "\fB\-c, \-\-cxinstalldir\fR \fI\s-1PATH\s0\fR" 4
 .IX Item "-c, --cxinstalldir PATH"
 Use the supplied path as the path to either a crossover office/games install
@@ -150,6 +170,13 @@ This causes wwine to run the command specified in ~/bin/startFile
 using the parameters specified in ~/bin/startFile, with the exception of
 \&\-\-wine, which would be wine instead of cxgames (here assuming this
 is the file created by the above example).
+.IP "\fIwwine \-w cxg \-b file \-\-env \*(-- winetricks \-\-no\-isolate vcrun6\fR" 4
+.IX Item "wwine -w cxg -b file --env  winetricks --no-isolate vcrun6"
+This causes wwine to set the environment variables \s-1WINE\s0 and \s-1WINEPREFIX\s0,
+and then execute the command supplied. In this case it would run
+winetricks, which would be told to install \*(L"vcrun6\*(R". Because it is running
+under wwine's \-\-env parameter, winetricks will use wwine to perform
+the actions, thus allowing you to use winetricks with cxgames.
 .IP "\fIwwine \-k\fR" 4
 .IX Item "wwine -k"
 Will make wwine attempt to kill all running wine processes on this system by
@@ -191,7 +218,7 @@ submit feature requests there as well.
 \&\fBwwine\fR is written by Eskild Hustvedt <\fIcode at zerodogg dot org\fR>
 .SH "LICENSE AND COPYRIGHT"
 .IX Header "LICENSE AND COPYRIGHT"
-Copyright (C) Eskild Hustvedt 2009, 2010
+Copyright (C) Eskild Hustvedt 2009, 2010, 2011
 .PP
 This is free software; see the source for copying conditions.  There is \s-1NO\s0
 warranty; not even for \s-1MERCHANTABILITY\s0 or \s-1FITNESS\s0 \s-1FOR\s0 A \s-1PARTICULAR\s0 \s-1PURPOSE\s0.

@@ -35,6 +35,8 @@ $wrapperPath = nil
 $wrapperCwd = nil
 # File to load wwine data from
 $wwineDataFrom = nil
+# true if we're in --env mode
+$envMode = false
 
 # Purpose: Attempt to kill all running wine processes
 def killWine (dryRun = false, signal = 15)
@@ -323,6 +325,39 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 	writeWrapper(targetFile ,wwineCmd, wineCommand, $wrapperCwd, wwineInfo, args, wineprefix)
 end
 
+# Purpose: Sets WINE and WINEPREFIX, and then either outputs them to STDOUT, or
+# 		executes whatever native command was supplied (the logic that handles --env)
+def setEnvAndExec (wine,bottle,cmd,args,type)
+	wwineCmd, wwineInfo = generateWwineCmd(wine,nil,cmd,type)
+
+	wwineCmd.push('--env-bottle')
+	wwineCmd.push('--')
+	wwineCmd.unshift(File.expand_path($0))
+
+	if !bottle
+		puts("--env requires a --bottle")
+		exit(1)
+	end
+
+	if wine == 'wine' || File.exists?(wine)
+		bottlePath = ENV['WINEPREFIX']
+	elsif wine == 'cedega'
+		bottlePath = ENV['HOME']+'/.cedega/'+bottle
+	else
+		bottlePath = ENV['HOME']+'/.'+wine+'/'+bottle
+	end
+
+	ENV['WINEPREFIX'] = bottlePath
+	ENV['WINE'] = wwineCmd.join(" ")
+	if args.length > 0
+		exec *args
+	else
+		puts("WINE="+shellQuote(ENV['WINE']))
+		puts("WINEPREFIX="+shellQuote(ENV['WINEPREFIX']))
+	end
+	exit
+end
+
 # Purpose: Load wwine data from a wrapper script
 def loadWwineDataFromFile (file,dryRun = false)
 	begin
@@ -333,8 +368,14 @@ def loadWwineDataFromFile (file,dryRun = false)
 			puts file+': is not readable'
 			exit(1)
 		end
-		puts 'Loading settings from '+file+':'
-		outFormat = '%-20s: %s'+"\n"
+
+		# Don't output any info-messages when in --env mode
+		if $envMode
+			outFormat = ''
+		else
+			puts 'Loading settings from '+file+':'
+			outFormat = '%-20s: %s'+"\n"
+		end
 		source = File.open(file)
 
 		if $wrapperPath
@@ -382,7 +423,8 @@ def loadWwineDataFromFile (file,dryRun = false)
 			exit(0)
 		end
 
-		if info[1] != 'nil' && !$wrapperCwd
+		# Get the directory
+		if info[1] != 'nil' && !$wrapperCwd && !$envMode
 			if $wrapperPath
 				switchMessage = '--wrapdir'
 			else
@@ -401,22 +443,26 @@ def loadWwineDataFromFile (file,dryRun = false)
 			end
 		end
 
+		# Get the --wine to use
 		if $wine == nil && info[2] != 'nil'
 			$wine = info[2]
 			printf(outFormat,outMessage+'--wine',$wine)
 		end
 
+		# Get the --bottle to use
 		if $bottle == nil && info[3] != 'nil'
 			$bottle = info[3]
 			printf(outFormat,outMessage+'--bottle',$bottle)
 		end
 
+		# Get the --cxinstalldir to use
 		if $cxPath == nil && info[4] != 'nil'
 			$cxPath = info[4]
 			printf(outFormat,outMessage+'--cxinstalldir',$cxPath)
 		end
 
-		if ! dryRun
+		# Set the command to run
+		if ! dryRun && !$envMode
 			if $wrapperPath
 				out = 'Program command'
 			else
@@ -467,6 +513,7 @@ def Help ()
 	printHelp('-h','--help','Display this help text')
 	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
 	printHelp('-b','--bottle','Use the selected bottle (~/.wwinebottles/[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
+	printHelp('','--env','Set the WINE and WINEPREFIX environment variables to match the parameters provided to wwine and optionally run a program with those variables set.')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
 	printHelp('','--drykill','Print what --kill would have done, but don\'t actually do anything')
 	printHelp('-c','--cxinstalldir','Use the supplied path as the install path for CXoffice/CXgames (default: autodetect).')
@@ -906,6 +953,7 @@ def runWine (wine,bottle,args)
 
 	if wine == nil
 		type,cmd = getAutoWithParams(bottle)
+		wine = type
 	else
 		# Expand cxg and cxo
 		if wine == 'cxg'
@@ -931,9 +979,34 @@ def runWine (wine,bottle,args)
 	end
 	cmd.concat(args)
 
+	# If args is a single parameter, that parameter is --version, and we're not using
+	# vanilla wine, then we emulate vanilla wine's --version output. This helps
+	# utilities like winetricks when it is running under "wwine --env"
+	if args.length == 1 && args[0] == '--version'
+		# For CX* we can actually output a useful version number, namely the
+		# wine version that CX* release was based on
+		if wine == 'cxgames' || wine == 'cxoffice'
+			cxgBin = getCXwithParams(wine,nil,false)
+			cxVer, cxwVer = getCXVersionsFrom( cxgBin )
+			# CX* wine --versions often contain git revisions and other additional
+			# information in the version number, this strips that out.
+			cxwVer.sub!(/-.*/,'')
+			puts 'wine-'+cxwVer
+			exit
+		# For cedega we just output an invalid version number in the same syntax
+		# as vanilla wine would have done
+		elsif wine == 'cedega'
+			puts 'wine-0.0.0'
+			exit
+		end
+	end
+
+	# If we're in envMode, then we let setEnvAndExec handle the rest
+	if $envMode
+		setEnvAndExec(wine,bottle,cmd,args,type)
 	# If wrapperPath is set, then we're suppose to generate a wrapper script instead
 	# of actually executing it.
-	if $wrapperPath != nil
+	elsif $wrapperPath != nil
 		generateWrapper(wine,bottle,$wrapperPath,cmd,args,type)
 	else
 		runcmd(cmd)
@@ -952,6 +1025,8 @@ opts = GetoptLong.new(
 	[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
 	[ '--man', GetoptLong::NO_ARGUMENT ],
+	[ '--env', GetoptLong::NO_ARGUMENT ],
+	[ '--env-bottle', GetoptLong::NO_ARGUMENT ],
 	[ '--from', '-s', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
@@ -967,6 +1042,13 @@ begin
 			$wine = arg
 		when '--bottle'
 			$bottle = arg
+		when '--env-bottle'
+			if ENV['WINEPREFIX'] && ENV['WINEPREFIX'].length > 0
+				$bottle = File.basename(ENV['WINEPREFIX'])
+			else
+				puts 'wwine: --env-bottle supplied but WINEPREFIX is not set'
+				exit(1)
+			end
 		when '--verbose'
 			$verbose = true
 		when '--drykill'
@@ -992,6 +1074,8 @@ begin
 			$wrapperCwd = arg
 		when '--from'
 			$wwineDataFrom = arg
+		when '--env'
+			$envMode = true
 		when '--man'
 			showManPage()
 			exit(0)
@@ -1011,7 +1095,7 @@ if $wwineDataFrom
 	loadWwineDataFromFile($wwineDataFrom)
 end
 
-if ARGV.length == 0
+if ARGV.length == 0 && !$envMode
 	Help()
 	exit(1)
 end
