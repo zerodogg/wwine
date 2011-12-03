@@ -189,7 +189,7 @@ def shellQuote(target)
 	end
 
 	fixedTarget = target.gsub('\\') { '\\\\' }
-	fixedTarget.gsub!(/'/,"\\\\'")
+	fixedTarget.gsub!(/'/,"'\"'\"'")
 
 	finalTarget = "'"
 	finalTarget.concat(fixedTarget)
