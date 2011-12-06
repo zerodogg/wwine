@@ -221,7 +221,7 @@ end
 
 # Purpose: Write a wrapper script
 def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, wineprefix = nil)
-	# Open the file for riting
+	# Open the file for writing
 	begin
 		file = File.open(targetFile,'w')
 	rescue
@@ -236,9 +236,23 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	file.puts('# You should have received a copy of the GNU General Public License')
 	file.puts('# along with wwine. If not, see <http://www.gnu.org/licenses/>.')
 	file.puts('#')
-	file.puts('# The following two lines contain wwine metadata');
-	file.puts('# wwineInfo: v1 '+shellQuote(wwineInfo).join(' '))
-	file.puts('# wwineCmd: '+shellQuote(args).join(' '));
+	file.puts('# -- Begin wwine metadata --')
+	file.puts('# wwineInfo: v2')
+	file.puts('# wwineDir: '+wwineInfo[0])
+	file.puts('# wwineWine: '+wwineInfo[1])
+	file.puts('# wwineBottle: '+wwineInfo[2])
+	file.puts('# wwineCxinstalldir: '+wwineInfo[3])
+	# wwineCmd isn't used in v2, but v1 outputs an invalid message if it
+	# doesn't exist. wwineCmd (unnumbered) will be dropped in a later version.
+	file.puts('# wwineCmd: nil')
+
+	subN = 0
+	args.each do |sub|
+		file.puts("# wwineCmd["+subN.to_s+"]: "+sub)
+		subN += 1
+	end
+
+	file.puts('# -- End wwine metadata  --')
 	file.puts('')
 	file.puts("cd "+shellQuote(cwd)+" || exit 1")
 	file.puts('wwine='+shellQuote(File.expand_path($0)))
@@ -384,80 +398,76 @@ def loadWwineDataFromFile (file,dryRun = false)
 			outMessage = 'Using '
 		end
 
+		info = Hash.new
 		wwineInfo = ''
 		wwineCmd = ''
 
 		source.each do |line|
-			if line.sub!(/^#\s+wwineInfo:\s*/,'')
-				wwineInfo = line
-			elsif line.sub!(/^#\s+wwineCmd:\s*/,'')
-				wwineCmd = line
-			end
-			if wwineInfo != '' && wwineCmd != ''
-				break
+			if line.match(/^#\s+wwine/)
+				key = line.sub(/^#\s+wwine(\S+):\s*(.+)$/,'\1').chomp
+				value = line.sub(/^#\s+wwine(\S+):\s*(.+)$/,'\2').chomp
+				info[key] = value
 			end
 		end
 
-		info = []
-		cmd = []
-
-		if wwineInfo == nil || wwineCmd == nil || wwineInfo == '' || wwineCmd == ''
+		if ! info['Info']
 			puts "The wwine header in this file is broken or missing."
 			puts "Unable to continue."
 			exit(0)
 		end
-
-		unquoteShellArray(wwineInfo,info)
-		unquoteShellArray(wwineCmd,cmd)
-
-		if info[0] != 'v1'
-			puts "This version of wwine only supports info format v1."
-			puts "This file is version "+info[0]
+		if info['Info'] == 'v2'
+			info = parseWwineDataV2(info);
+		elsif info['Info'].match(/^v1/)
+			info = parseWwineDataV1(info)
+		else
+			version = info['Info'].sub(/^(v\S+).+/,'\1').chomp
+			puts "This version of wwine supports info format v1 and v2."
+			puts "This file is version "+version
 			puts "Unable to continue."
 			exit(0)
 		end
 
-		if wwineInfo.length < 6 || wwineCmd.length < 1
+		if info['Cmd'].length < 1
 			puts "The wwine header in this file is broken."
 			puts "Unable to continue."
 			exit(0)
 		end
 
 		# Get the directory
-		if info[1] != 'nil' && !$wrapperCwd && !$envMode
+		if info['Dir'] != 'nil' && !$wrapperCwd && !$envMode
 			if $wrapperPath
 				switchMessage = '--wrapdir'
 			else
 				switchMessage = 'Switching to directory'
 			end
-			printf(outFormat,switchMessage,info[1])
-			if File.exists?(info[1])
+			printf(outFormat,switchMessage,info['Dir'])
+			if File.exists?(info['Dir'])
 				if $wrapperPath
-					$wrapperCwd = info[1]
+					$wrapperCwd = info['Dir']
 				else
-					Dir.chdir(info[1])
+					Dir.chdir(info['Dir'])
 				end
 			else
-				puts info[1]+': does not exist, giving up.'
+				puts info['Dir']+': does not exist, giving up.'
 				exit(0)
 			end
 		end
 
 		# Get the --wine to use
-		if $wine == nil && info[2] != 'nil'
-			$wine = info[2]
+		if $wine == nil && info['Wine'] != 'nil'
+			$wine = info['Wine']
 			printf(outFormat,outMessage+'--wine',$wine)
 		end
 
 		# Get the --bottle to use
-		if $bottle == nil && info[3] != 'nil'
-			$bottle = info[3]
+		if $bottle == nil && info['Bottle'] != 'nil'
+			$bottle = info['Bottle']
 			printf(outFormat,outMessage+'--bottle',$bottle)
 		end
 
 		# Get the --cxinstalldir to use
-		if $cxPath == nil && info[4] != 'nil'
-			$cxPath = info[4]
+		if $cxPath == nil && info['Cxinstalldir'] != 'nil'
+			$cxPath = info['Cxinstalldir']
 			printf(outFormat,outMessage+'--cxinstalldir',$cxPath)
 		end
 
@@ -468,12 +478,45 @@ def loadWwineDataFromFile (file,dryRun = false)
 			else
 				out = 'Will now run'
 			end
-			printf(outFormat,out,cmd.join(' '))
-			ARGV.unshift(*cmd)
+			printf(outFormat,out,info['Cmd'].join(' '))
+			ARGV.unshift(*info['Cmd'])
 		end
 	rescue => ex
 		handleException(ex)
 	end
+end
+
+# Parses wwine metadata version 1 (wwine 0.1.x)
+def parseWwineDataV1 (rawData)
+	data = []
+	unquoteShellArray(rawData['Info'],data)
+	info = Hash.new
+	info['Dir'] = data[1]
+	info['Wine'] = data[2]
+	info['Bottle'] = data[3]
+	info['Cxinstalldir'] = data[4]
+
+	cmd = []
+
+	unquoteShellArray(rawData['Cmd'],cmd)
+	info['Cmd'] = cmd
+	return info
+end
+
+# Parses wwine metadata version 2 (wwine 0.2+)
+def parseWwineDataV2 (data)
+	cmd = []
+	currNo = 0
+	while currNo < 999
+		if data['Cmd['+currNo.to_s+']'] != nil
+			cmd.push(data['Cmd['+currNo.to_s+']'])
+		else
+			break
+		end
+		currNo += 1
+	end
+	data['Cmd'] = cmd
+	return data
 end
 
 # Purpose: Run a command, outputting info of it in verbose mode
