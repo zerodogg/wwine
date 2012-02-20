@@ -556,7 +556,7 @@ def Help ()
 	puts "Usage: wwine (WWINE PARAMETERS) PROGRAM -- [PROGRAM ARGUMENTS]"
 	puts ""
 	printHelp('-h','--help','Display this help text')
-	printHelp('-w','--wine','Select the wine to use: wine, cxoffice, cxgames, cedega, or a path to a wine bin. Default: wine')
+	printHelp('-w','--wine','Select the wine to use: wine, crossover, cxgames, cedega, or a path to a wine bin. Default: wine')
 	printHelp('-b','--bottle','Use the selected bottle (~/.wwinebottles/[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
 	printHelp('','--env','Set the WINE and WINEPREFIX environment variables to match the parameters provided to wwine and optionally run a program with those variables set.')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
@@ -769,7 +769,7 @@ def debugInfo ()
 
 		cxoBin = getCXwithParams('cxoffice',nil,false)
 		cxoVer = getCXVersionsFrom(cxoBin,true)
-		printf(outFormat,'Crossover Office',cxoVer)
+		printf(outFormat,'Crossover',cxoVer)
 
 		cedegaVer = getCedegaVersionString()
 		printf(outFormat,'Cedega',cedegaVer)
@@ -872,25 +872,35 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	final = []
 	cxdir = nil
 
+	mode = wine
+
 	# Various crossover install paths
 	wines = ['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine]
 
 	# If cxpath is set then overwrite the default paths
 	if $cxPath != nil
-		wines = [ $cxPath+'/'+wine ]
+		wines = [ $cxPath+'/'+wine, $cxPath ]
 	end
 
 	wines.each do |path|
-		if File.exists?(path) and File.executable?(path+'/bin/cxstart')
-			cxdir = path
-			break
+		if File.exists?(path)
+			if File.executable?(path+'/bin/crossover') and wine != 'cxgames'
+				mode = 'crossover'
+				cxdir = path
+				break
+			elsif File.executable?(path+'/bin/cxstart')
+				cxdir = path
+				break
+			end
 		end
 	end
 
 	# If we're using cxPath, perform some additional detection
-	if $cxPath != nil
+	if $cxPath != nil and mode != 'crossover'
 		if File.exists?($cxPath+'/etc/'+wine+'.conf')
 			cxdir = $cxPath
+		else
+			cxdir = nil
 		end
 	end
 
@@ -926,7 +936,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	final.push('--');
 
 	# Create the bottle if it does not exist
-	if bottle != nil and ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+	if mode != 'crossover' and bottle != nil and ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
 		if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
@@ -1003,13 +1013,13 @@ def runWine (wine,bottle,args)
 		# Expand cxg and cxo
 		if wine == 'cxg'
 			wine = 'cxgames'
-		elsif wine == 'cxo'
+		elsif wine == 'cxo' || wine == 'cx'
 			wine = 'cxoffice'
 		end
 
 		type = wine
 
-		if wine == 'cxgames' || wine == 'cxoffice'
+		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
 			cmd = getCXwithParams(wine,bottle)
 		elsif wine == 'wine' || File.executable?(wine)
 			type = 'wine'
@@ -1018,7 +1028,7 @@ def runWine (wine,bottle,args)
 			cmd = getCedegaWithParams(wine,bottle)
 		else
 			puts('Unknown --wine: '+wine)
-			puts('Must be one of: wine, cxgames, cxoffice, cedega, or the path to a wine executable')
+			puts('Must be one of: wine, crossover, cxgames, cedega, or the path to a wine executable')
 			exit(1)
 		end
 	end
@@ -1030,7 +1040,7 @@ def runWine (wine,bottle,args)
 	if args.length == 1 && args[0] == '--version'
 		# For CX* we can actually output a useful version number, namely the
 		# wine version that CX* release was based on
-		if wine == 'cxgames' || wine == 'cxoffice'
+		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
 			cxgBin = getCXwithParams(wine,nil,false)
 			cxVer, cxwVer = getCXVersionsFrom( cxgBin )
 			# CX* wine --versions often contain git revisions and other additional

@@ -17,7 +17,7 @@ wwine I<(WWINE PARAMETERS)> I<PROGRAM> -- I<[PROGRAM ARGUMENTS]>
 =head1 DESCRIPTION
 
 B<wwine> is a a wine(1) wrapper. It wraps various flavours of wine
-(including vanilla wine and crossover office/games) into a single
+(including vanilla wine and crossover) into a single
 unified interface, complete with full bottle support for all
 of them (including vanilla wine).
 
@@ -44,24 +44,25 @@ Display the help screen
 
 Use the supplied flavour of wine. The default is to use vanilla wine.
 
-Possible parameters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
-cxo (alias for cxoffice) or /path/to/a/wine.binary
+Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
+crossover), cxg (alias for cxgames), cxo (alias for cxoffice) or
+/path/to/a/wine.binary
 
-If this parameter is not supplied, wwine will attempt to autodetect which
-wine to use, checking for the existance of flavours in the following order,
-using the first one found: wine, cxgames, cxoffice, cedega. To see the
+If this parameter is not supplied, wwine will attempt to autodetect which wine
+to use, checking for the existance of flavours in the following order, using
+the first one found: wine, crossover, cxoffice, cxgames, cedega. To see the
 default flavour wwine will use, run I<wwine --debuginfo>.
 
 See also I<--cxinstalldir>.
 
 =item B<-b, --bottle> I<NAME>
 
-Use the bottle with the name supplied. For cxgames, cxoffice or cedega
-it uses the flavours builtin bottle support. For vanilla wine it sets
-WINEPREFIX to use ~/.wwinebottles/<NAME>. It defaults to no bottle,
-in which case vanilla wine will use ~/.wine, cxoffice/cxgames will
-use the bottle defined as default and for cedega a bottle named 'wwineFolder'
-will be used.
+Use the bottle with the name supplied. For crossover, cxgames, cxoffice or
+cedega it uses the flavours builtin bottle support. For vanilla wine it sets
+WINEPREFIX to use ~/.wwinebottles/<NAME>. It defaults to no bottle, in which
+case vanilla wine will use ~/.wine, crossover/cxoffice/cxgames will use the
+bottle defined as default and for cedega a bottle named 'wwineFolder' will be
+used.
 
 =item B<-k, --kill>
 
@@ -80,7 +81,7 @@ B<--env> causes wwine to set the WINE and WINEPREFIX environment
 variables, and (optionally) run a native program with those variables
 set. This lets you run any program that uses the WINE and WINEPREFIX
 variables with wwine instead of wine (effectively giving you bottle
-support, as well as support for using cxgames/cxoffice/.. instead
+support, as well as support for using crossover/cxgames/cxoffice/.. instead
 of wine).
 
 When you use --env, wwine will obey --bottle and --wine (or --from) and set
@@ -118,8 +119,8 @@ This option is primarily for internal use. It causes wwine to parse which
 
 =item B<-c, --cxinstalldir> I<PATH>
 
-Use the supplied path as the path to either a crossover office/games install
-directory, or as a directory that contains a cxoffice and/or cxgames directory.
+Use the supplied path as the path to a crossover install directory, or as a
+directory that contains a crossover, cxoffice and/or cxgames directory.
 
 =item B<--wrap> I<PATH>
 
@@ -244,7 +245,7 @@ sending them the KILL signal. Should only be used if "wwine -k" fails.
 
 =head1 DEPENDENCIES
 
-Requires at least one of wine, cxoffice, cxgames or cedega.
+Requires at least one of wine, crossover, cxoffice, cxgames or cedega.
 
 =head1 ENVIRONMENT VARIABLES
 
