@@ -91,6 +91,26 @@ have been set.
 See the EXAMPLES section for an example of how to use winetricks
 with cxgames using wwine's B<--env>
 
+=item B<--tricks>
+
+Run winetricks with the wine/bottle combination supplied. This is I<almost>
+equivalent to I<--env winetricks -- --no-isolate> (the I<--> would be required
+if you used --env, and would stop processing the rest of the I<wwine> command-line,
+--tricks does not add the --, so it can be supplied anywhere on the command-line)
+I<--tricks> can be used to quickly call winetricks in a bottle. Examples:
+
+=over
+
+=item Install package (ie. corefonts)
+
+I<--tricks corefonts>
+
+=item Get winetricks help
+
+I<--tricks -- --help>
+
+=back
+
 =item B<--env-bottle>
 
 This option is primarily for internal use. It causes wwine to parse which

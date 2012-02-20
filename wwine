@@ -37,6 +37,8 @@ $wrapperCwd = nil
 $wwineDataFrom = nil
 # true if we're in --env mode
 $envMode = false
+# true if we're in --tricks mode
+$tricksMode = false
 
 # Purpose: Attempt to kill all running wine processes
 def killWine (dryRun = false, signal = 15)
@@ -1069,6 +1071,7 @@ opts = GetoptLong.new(
 	[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
 	[ '--man', GetoptLong::NO_ARGUMENT ],
 	[ '--env', GetoptLong::NO_ARGUMENT ],
+	[ '--tricks', GetoptLong::NO_ARGUMENT ],
 	[ '--env-bottle', GetoptLong::NO_ARGUMENT ],
 	[ '--from', '-s', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
@@ -1119,6 +1122,9 @@ begin
 			$wwineDataFrom = arg
 		when '--env'
 			$envMode = true
+		when '--tricks'
+			$tricksMode = true
+			$envMode = true
 		when '--man'
 			showManPage()
 			exit(0)
@@ -1141,6 +1147,10 @@ end
 if ARGV.length == 0 && !$envMode
 	Help()
 	exit(1)
+end
+
+if $tricksMode
+	ARGV.unshift('winetricks','--no-isolate')
 end
 
 begin
