@@ -873,6 +873,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	cxdir = nil
 
 	mode = wine
+	bottleDir = '.'+wine
 
 	# Various crossover install paths
 	wines = ['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine]
@@ -887,6 +888,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 			if File.executable?(path+'/bin/crossover') and wine != 'cxgames'
 				mode = 'crossover'
 				cxdir = path
+				bottleDir = '.cxoffice2'
 				break
 			elsif File.executable?(path+'/bin/cxstart')
 				cxdir = path
@@ -936,10 +938,10 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	final.push('--');
 
 	# Create the bottle if it does not exist
-	if mode != 'crossover' and bottle != nil and ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+	if bottle != nil and ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
-		if ! File.exists?(ENV['HOME']+'/.'+wine+'/'+bottle)
+		if ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
 			puts 'Bottle creation failed.'
 			exit 1
 		end
