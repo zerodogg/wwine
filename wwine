@@ -1012,11 +1012,11 @@ def runWine (wine,bottle,args)
 		type,cmd = getAutoWithParams(bottle)
 		wine = type
 	else
-		# Expand cxg and cxo
+		# Expand cx*
 		if wine == 'cxg'
 			wine = 'cxgames'
-		elsif wine == 'cxo' || wine == 'cx'
-			wine = 'cxoffice'
+		elsif wine == 'cxo' || wine == 'cx' || wine == 'cxoffice'
+			wine = 'crossover'
 		end
 
 		type = wine
