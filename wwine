@@ -885,7 +885,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 
 	wines.each do |path|
 		if File.exists?(path)
-			if File.executable?(path+'/bin/crossover') and wine != 'cxgames'
+			if ( File.executable?(path+'/bin/cximportbottles') || File.executable?(path+'/bin/crossover') ) and wine != 'cxgames'
 				mode = 'crossover'
 				cxdir = path
 				bottleDir = '.cxoffice2'
