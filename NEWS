@@ -4,6 +4,8 @@ Version 0.2
 - Improved escaping of ' in --wrap(ped) scripts
 - wwine metadata v2: Updated the wwine metadata format to be more flexible (and
   reliable). It can still read v1.
+- Added support for 'crossover' (cx* 11.0+, where cxoffice and cxgames have
+  been merged)
 
 Version 0.1.2
 - Made messages that gets output when using --from with --wrap

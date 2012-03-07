@@ -886,10 +886,14 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	wines.each do |path|
 		if File.exists?(path)
 			if ( File.executable?(path+'/bin/cximportbottles') || File.executable?(path+'/bin/crossover') ) and wine != 'cxgames'
-				mode = 'crossover'
-				cxdir = path
-				bottleDir = '.cxoffice2'
-				break
+                # Perform additional detection of dotDir, as that one tends to change
+                dotDir = Dir.glob(path+'/etc/cxoffice*.conf').shift
+                if( dotDir != nil && dotDir.sub!(/^.*(cxoffice\d*)\.conf$/,'\1') )
+                    mode = 'crossover'
+                    cxdir = path
+                    bottleDir = '.'+dotDir
+                    break
+                end
 			elsif File.executable?(path+'/bin/cxstart')
 				cxdir = path
 				break
@@ -1023,6 +1027,12 @@ def runWine (wine,bottle,args)
 
 		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
 			cmd = getCXwithParams(wine,bottle)
+            if wine == 'cxgames' && cmd == nil
+                cmd = getCXwithParams('crossover',bottle)
+                if cmd != nil
+                    puts('Converting --wine cxgames to --wine crossover since cxgames is not installed')
+                end
+            end
 		elsif wine == 'wine' || File.executable?(wine)
 			type = 'wine'
 			cmd = getWineWithParams(wine,bottle)
