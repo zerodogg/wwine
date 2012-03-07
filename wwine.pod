@@ -46,7 +46,9 @@ Use the supplied flavour of wine. The default is to use vanilla wine.
 
 Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
 crossover), cxg (alias for cxgames), cxo (alias for cxoffice) or
-/path/to/a/wine.binary
+/path/to/a/wine.binary. Note that if you have crossover, but not cxgames
+installed, wwine will alias cxgames to crossover, to provide a simple upgrade
+path where wrapper scripts 'just work'.
 
 If this parameter is not supplied, wwine will attempt to autodetect which wine
 to use, checking for the existance of flavours in the following order, using
