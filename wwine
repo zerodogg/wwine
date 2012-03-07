@@ -765,10 +765,15 @@ def debugInfo ()
 
 		cxgBin = getCXwithParams('cxgames',nil,false)
 		cxgVer = getCXVersionsFrom(cxgBin,true)
-		printf(outFormat,'Crossover Games',cxgVer)
 
 		cxoBin = getCXwithParams('cxoffice',nil,false)
 		cxoVer = getCXVersionsFrom(cxoBin,true)
+
+		if(cxoBin && !cxgBin)
+			cxgVer = '(not available - aliased to crossover)'
+		end
+
+		printf(outFormat,'Crossover Games',cxgVer)
 		printf(outFormat,'Crossover',cxoVer)
 
 		cedegaVer = getCedegaVersionString()
