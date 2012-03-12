@@ -20,7 +20,7 @@ require 'getoptlong'
 # To read info for --debuginfo
 require 'open3'
 # Application version
-$version = '0.2'
+$version = '0.2.1'
 # The wine flavour to use
 $wine = nil
 # The bottle to use
@@ -877,15 +877,19 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 	final = []
 	cxdir = nil
 
+    installName = wine
+    if wine == 'crossover'
+        installName = 'cxoffice'
+    end
 	mode = wine
 	bottleDir = '.'+wine
 
 	# Various crossover install paths
-	wines = ['/opt/'+wine, ENV['HOME']+'/'+wine, ENV['HOME']+'/.local/'+wine, ENV['HOME']+'/games/'+wine]
+	wines = ['/opt/'+installName, ENV['HOME']+'/'+installName, ENV['HOME']+'/.local/'+installName, ENV['HOME']+'/games/'+installName]
 
 	# If cxpath is set then overwrite the default paths
 	if $cxPath != nil
-		wines = [ $cxPath+'/'+wine, $cxPath ]
+		wines = [ $cxPath+'/'+installName, $cxPath ]
 	end
 
 	wines.each do |path|
@@ -1031,7 +1035,7 @@ def runWine (wine,bottle,args)
 		type = wine
 
 		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
-			cmd = getCXwithParams(wine,bottle)
+			cmd = getCXwithParams(wine,bottle,false)
             if wine == 'cxgames' && cmd == nil
                 cmd = getCXwithParams('crossover',bottle)
                 if cmd != nil

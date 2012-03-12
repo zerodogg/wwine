@@ -1,3 +1,8 @@
+Version 0.2.1
+- Fixed a problem that could cause wwine to fail to detect Crossover
+- wwine now uses crossover in place of cxgames if the latter is not installed,
+  like was previously documented
+
 Version 0.2
 - Added an --env parameter, makes wwine set the WINE and WINEPREFIX
    variables for another program to use
