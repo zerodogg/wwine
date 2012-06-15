@@ -363,9 +363,12 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
 
+	vputs("Set WINEPREFIX="+bottlePath)
+	vputs("Set WINE="+wwineCmd.join(" "))
 	ENV['WINEPREFIX'] = bottlePath
 	ENV['WINE'] = wwineCmd.join(" ")
 	if args.length > 0
+		puts("Executing "+args.join(' '))
 		exec *args
 	else
 		puts("WINE="+shellQuote(ENV['WINE']))
