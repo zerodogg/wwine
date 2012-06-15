@@ -20,7 +20,7 @@ require 'getoptlong'
 # To read info for --debuginfo
 require 'open3'
 # Application version
-$version = '0.2.1'
+$version = '0.2.2'
 # The wine flavour to use
 $wine = nil
 # The bottle to use
@@ -360,7 +360,7 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	elsif wine == 'cedega'
 		bottlePath = ENV['HOME']+'/.cedega/'+bottle
 	else
-		bottlePath = ENV['HOME']+'/.'+wine+'/'+bottle
+		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
 
 	ENV['WINEPREFIX'] = bottlePath
@@ -960,7 +960,11 @@ def getCXwithParams (wine,bottle, missingIsFatal = true)
 		end
 	end
 
-	return final
+	if getBottleDir
+		return ENV['HOME']+'/'+bottleDir+'/'+bottle
+	else
+		return final
+	end
 end
 
 # Purpose: Get parameters for cedega
