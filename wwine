@@ -876,7 +876,7 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 end
 
 # Purpose: Get parameters for crossover
-def getCXwithParams (wine,bottle, missingIsFatal = true)
+def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	final = []
 	cxdir = nil
 
