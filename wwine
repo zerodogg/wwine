@@ -885,7 +885,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
         installName = 'cxoffice'
     end
 	mode = wine
-	bottleDir = '.'+wine
+	bottleDir = '.'+installName
 
 	# Various crossover install paths
 	wines = ['/opt/'+installName, ENV['HOME']+'/'+installName, ENV['HOME']+'/.local/'+installName, ENV['HOME']+'/games/'+installName]
@@ -925,12 +925,13 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	# If the dir does not exist, give up
 	if not cxdir
 		if !missingIsFatal
+            vputs(V_DBG,'Failed to detect cxdir')
 			return nil
 		end
 		if $cxPath != nil
-			puts('Could not find a directory named "'+wine+'" in '+$cxPath)
-			puts('and '+$cxPath+' does not appear to be a '+wine+' install directory')
-			if wine == 'cxgames'
+			puts('Could not find a directory named "'+installName+'" in '+$cxPath)
+			puts('and '+$cxPath+' does not appear to be a '+installName+' install directory')
+			if installName == 'cxgames'
 				reverse = 'cxoffice'
 			else
 				reverse = 'cxgames'
@@ -1042,7 +1043,11 @@ def runWine (wine,bottle,args)
 		type = wine
 
 		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
-			cmd = getCXwithParams(wine,bottle,false)
+            missingIsFatal = true
+            if wine == 'cxgames'
+                missingIsFatal = false
+            end
+			cmd = getCXwithParams(wine,bottle,missingIsFatal)
             if wine == 'cxgames' && cmd == nil
                 cmd = getCXwithParams('crossover',bottle)
                 if cmd != nil
@@ -1060,6 +1065,10 @@ def runWine (wine,bottle,args)
 			exit(1)
 		end
 	end
+    if cmd == nil
+        puts('Command detection failed. This is a bug')
+        exit(1)
+    end
 	cmd.concat(args)
 
 	# If args is a single parameter, that parameter is --version, and we're not using
@@ -1149,6 +1158,10 @@ begin
 			exit(0)
 		when '--cxinstalldir'
 			$cxPath = arg
+            if ! File.exists?($cxPath)
+                puts('The supplied --cxinstalldir "'+$cxPath+'" does not exist')
+                exit(1)
+            end
 		when '--version'
 			puts('wwine version '+$version+' (for wine version info, run wwine --debuginfo)')
 			exit(0)
