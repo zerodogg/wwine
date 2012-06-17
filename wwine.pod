@@ -165,7 +165,8 @@ applied.
 =item B<-v, --verbose>
 
 Increase verbosity. When this is present wwine will tell you the exact
-commands it is running.
+commands it is running. Supply multiple times to increase verbosity (ie.
+to enable wwine debugging output).
 
 =item B<--man>
 

@@ -25,8 +25,6 @@ $version = '0.2.2'
 $wine = nil
 # The bottle to use
 $bottle = nil
-# Verbose mode (true/false)
-$verbose = false
 # CX path
 $cxPath = nil
 # Path to write wrapper to
@@ -39,6 +37,10 @@ $wwineDataFrom = nil
 $envMode = false
 # true if we're in --tricks mode
 $tricksMode = false
+# Verbosity level
+$verbosity = 0
+V_INFO=1
+V_DBG=2
 
 # Purpose: Attempt to kill all running wine processes
 def killWine (dryRun = false, signal = 15)
@@ -288,7 +290,7 @@ def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	wwineInfo = ['nil','nil','nil','nil']
 
 	# Generate a wwine command-line
-	if $verbose
+	if $verbosity > 0
 		wwineCmd.push('--verbose')
 	end
 	if $cxPath
@@ -363,8 +365,8 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
 
-	vputs("Set WINEPREFIX="+bottlePath)
-	vputs("Set WINE="+wwineCmd.join(" "))
+	vputs(V_INFO,"Set WINEPREFIX="+bottlePath)
+	vputs(V_INFO,"Set WINE="+wwineCmd.join(" "))
 	ENV['WINEPREFIX'] = bottlePath
 	ENV['WINE'] = wwineCmd.join(" ")
 	if args.length > 0
@@ -527,10 +529,10 @@ end
 # Purpose: Run a command, outputting info of it in verbose mode
 def runcmd(cmd, type = 'exec')
 	if(type == 'exec')
-		vputs 'Executing: '+cmd.join(' ')
+		vputs(V_INFO,'Executing: '+cmd.join(' '))
 		exec *cmd
 	else
-		vputs 'Running: '+cmd.join(' ')
+		vputs(V_INFO,'Running: '+cmd.join(' '))
 		return system(*cmd)
 	end
 end
@@ -546,8 +548,11 @@ def inPath(exec)
 end
 
 # Purpose: Output a string if in verbose mode
-def vputs (str)
-	if $verbose
+def vputs (level,str)
+    if(level == V_DBG)
+        str = 'Debug: '+str
+    end
+	if $verbosity >= level
 		puts(str)
 	end
 end
@@ -568,7 +573,7 @@ def Help ()
 	printHelp('','--wrap','Write a wrapper script of your current wwine command to the path supplied')
 	printHelp('','--wrapdir','Use the supplied directory as the working directory for the script created by --wrap (default: current directory)')
 	printHelp('-s','--from','Load parameters and program from the wrapper script supplied. Command-line arguments overrides settings from wrapper script.')
-	printHelp('-v','--verbose','Enable verbose mode')
+	printHelp('-v','--verbose','Enable verbose mode. Supply multiple times to further increase verbosity.')
 	printHelp('','--man','Show the wwine manpage')
 end
 
@@ -852,7 +857,8 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 		if ! (bottle =~ /^\.?\//)
 			bottle = ENV['HOME']+'/.wwinebottles/'+bottle
 			if !File.exists?(ENV['HOME']+'/.wwinebottles/')
-				vputs(ENV['HOME']+'/.wwinebottles/: does not exist, creating')
+				vputs(V_INFO,ENV['HOME']+'/.wwinebottles/: does not exist, creating')
+                vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
 				begin
 					Dir.mkdir(ENV['HOME']+'/.wwinebottles/')
 				rescue SystemCallError
@@ -863,15 +869,16 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 			end
 		end
 		ENV['WINEPREFIX'] = bottle
-		vputs('Set WINEPREFIX='+bottle)
+		vputs(V_INFO,'Set WINEPREFIX='+bottle)
 	end
 
 	# Default to no debugging output if WINEDEBUG is not set yet
 	if ! ENV.has_key?('WINEDEBUG')
-		vputs 'Set WINEDEBUG=-all'
+		vputs(V_INFO,'Set WINEDEBUG=-all')
 		ENV['WINEDEBUG'] = '-all'
 	end
 
+    vputs(V_DBG,'Detected wine: '+final.join(' '))
 	return final
 end
 
@@ -956,6 +963,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 
 	# Create the bottle if it does not exist
 	if bottle != nil and ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
+        vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
 		if ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
@@ -967,6 +975,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	if getBottleDir
 		return ENV['HOME']+'/'+bottleDir+'/'+bottle
 	else
+        vputs(V_DBG,'Detected cx: '+final.join(' '))
 		return final
 	end
 end
@@ -992,6 +1001,7 @@ def getCedegaWithParams (wine,bottle, missingIsFatal = true)
 	end
 	final.push(bottle)
 
+    vputs(V_DBG,'Detected cedega: '+final.join(' '))
 	return final
 end
 
@@ -1020,6 +1030,7 @@ def getAutoWithParams (bottle, missingIsFatal = true, returnFlavour = false)
 			return nil
 		end
 	else
+        vputs(V_DBG,'Autodetected wine command: '+cmd.join(' '))
 		return type,cmd
 	end
 end
@@ -1143,7 +1154,7 @@ begin
 				exit(1)
 			end
 		when '--verbose'
-			$verbose = true
+            $verbosity = $verbosity+1
 		when '--drykill'
 			killWine(true)
 			exit(0)
@@ -1184,7 +1195,7 @@ begin
 
 	if ENV['WWINE_VERBOSE'] != nil && ENV['WWINE_VERBOSE'] == '1'
 		puts('--verbose assumed because the environment variable WWINE_VERBOSE is set to 1')
-		$verbose = true
+        $verbosity = 1
 	end
 rescue
 	puts('See --help for more inforation')
