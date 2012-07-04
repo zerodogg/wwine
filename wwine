@@ -549,9 +549,9 @@ end
 
 # Purpose: Output a string if in verbose mode
 def vputs (level,str)
-    if(level == V_DBG)
-        str = 'Debug: '+str
-    end
+	if(level == V_DBG)
+		str = 'Debug: '+str
+	end
 	if $verbosity >= level
 		puts(str)
 	end
@@ -858,7 +858,7 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 			bottle = ENV['HOME']+'/.wwinebottles/'+bottle
 			if !File.exists?(ENV['HOME']+'/.wwinebottles/')
 				vputs(V_INFO,ENV['HOME']+'/.wwinebottles/: does not exist, creating')
-                vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
+				vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
 				begin
 					Dir.mkdir(ENV['HOME']+'/.wwinebottles/')
 				rescue SystemCallError
@@ -878,7 +878,7 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 		ENV['WINEDEBUG'] = '-all'
 	end
 
-    vputs(V_DBG,'Detected wine: '+final.join(' '))
+	vputs(V_DBG,'Detected wine: '+final.join(' '))
 	return final
 end
 
@@ -887,10 +887,10 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	final = []
 	cxdir = nil
 
-    installName = wine
-    if wine == 'crossover'
-        installName = 'cxoffice'
-    end
+	installName = wine
+	if wine == 'crossover'
+		installName = 'cxoffice'
+	end
 	mode = wine
 	bottleDir = '.'+installName
 
@@ -905,14 +905,14 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	wines.each do |path|
 		if File.exists?(path)
 			if ( File.executable?(path+'/bin/cximportbottles') || File.executable?(path+'/bin/crossover') ) and wine != 'cxgames'
-                # Perform additional detection of dotDir, as that one tends to change
-                dotDir = Dir.glob(path+'/etc/cxoffice*.conf').shift
-                if( dotDir != nil && dotDir.sub!(/^.*(cxoffice\d*)\.conf$/,'\1') )
-                    mode = 'crossover'
-                    cxdir = path
-                    bottleDir = '.'+dotDir
-                    break
-                end
+				# Perform additional detection of dotDir, as that one tends to change
+				dotDir = Dir.glob(path+'/etc/cxoffice*.conf').shift
+				if( dotDir != nil && dotDir.sub!(/^.*(cxoffice\d*)\.conf$/,'\1') )
+					mode = 'crossover'
+					cxdir = path
+					bottleDir = '.'+dotDir
+					break
+				end
 			elsif File.executable?(path+'/bin/cxstart')
 				cxdir = path
 				break
@@ -932,7 +932,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	# If the dir does not exist, give up
 	if not cxdir
 		if !missingIsFatal
-            vputs(V_DBG,'Failed to detect cxdir')
+			vputs(V_DBG,'Failed to detect cxdir')
 			return nil
 		end
 		if $cxPath != nil
@@ -963,7 +963,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 
 	# Create the bottle if it does not exist
 	if bottle != nil and ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
-        vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
+		vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
 		if ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
@@ -975,7 +975,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 	if getBottleDir
 		return ENV['HOME']+'/'+bottleDir+'/'+bottle
 	else
-        vputs(V_DBG,'Detected cx: '+final.join(' '))
+		vputs(V_DBG,'Detected cx: '+final.join(' '))
 		return final
 	end
 end
@@ -1001,7 +1001,7 @@ def getCedegaWithParams (wine,bottle, missingIsFatal = true)
 	end
 	final.push(bottle)
 
-    vputs(V_DBG,'Detected cedega: '+final.join(' '))
+	vputs(V_DBG,'Detected cedega: '+final.join(' '))
 	return final
 end
 
@@ -1030,7 +1030,7 @@ def getAutoWithParams (bottle, missingIsFatal = true, returnFlavour = false)
 			return nil
 		end
 	else
-        vputs(V_DBG,'Autodetected wine command: '+cmd.join(' '))
+		vputs(V_DBG,'Autodetected wine command: '+cmd.join(' '))
 		return type,cmd
 	end
 end
@@ -1054,17 +1054,17 @@ def runWine (wine,bottle,args)
 		type = wine
 
 		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
-            missingIsFatal = true
-            if wine == 'cxgames'
-                missingIsFatal = false
-            end
+			missingIsFatal = true
+			if wine == 'cxgames'
+				missingIsFatal = false
+			end
 			cmd = getCXwithParams(wine,bottle,missingIsFatal)
-            if wine == 'cxgames' && cmd == nil
-                cmd = getCXwithParams('crossover',bottle)
-                if cmd != nil
-                    puts('Converting --wine cxgames to --wine crossover since cxgames is not installed')
-                end
-            end
+			if wine == 'cxgames' && cmd == nil
+				cmd = getCXwithParams('crossover',bottle)
+				if cmd != nil
+					puts('Converting --wine cxgames to --wine crossover since cxgames is not installed')
+				end
+			end
 		elsif wine == 'wine' || File.executable?(wine)
 			type = 'wine'
 			cmd = getWineWithParams(wine,bottle)
@@ -1076,10 +1076,10 @@ def runWine (wine,bottle,args)
 			exit(1)
 		end
 	end
-    if cmd == nil
-        puts('Command detection failed. This is a bug')
-        exit(1)
-    end
+	if cmd == nil
+		puts('Command detection failed. This is a bug')
+		exit(1)
+	end
 	cmd.concat(args)
 
 	# If args is a single parameter, that parameter is --version, and we're not using
@@ -1154,7 +1154,7 @@ begin
 				exit(1)
 			end
 		when '--verbose'
-            $verbosity = $verbosity+1
+			$verbosity = $verbosity+1
 		when '--drykill'
 			killWine(true)
 			exit(0)
@@ -1169,10 +1169,10 @@ begin
 			exit(0)
 		when '--cxinstalldir'
 			$cxPath = arg
-            if ! File.exists?($cxPath)
-                puts('The supplied --cxinstalldir "'+$cxPath+'" does not exist')
-                exit(1)
-            end
+			if ! File.exists?($cxPath)
+				puts('The supplied --cxinstalldir "'+$cxPath+'" does not exist')
+				exit(1)
+			end
 		when '--version'
 			puts('wwine version '+$version+' (for wine version info, run wwine --debuginfo)')
 			exit(0)
@@ -1195,7 +1195,7 @@ begin
 
 	if ENV['WWINE_VERBOSE'] != nil && ENV['WWINE_VERBOSE'] == '1'
 		puts('--verbose assumed because the environment variable WWINE_VERBOSE is set to 1')
-        $verbosity = 1
+		$verbosity = 1
 	end
 rescue
 	puts('See --help for more inforation')
@@ -1220,3 +1220,4 @@ begin
 rescue => ex
 	handleException(ex)
 end
+# vim: noexpandtab
