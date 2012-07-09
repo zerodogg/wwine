@@ -337,7 +337,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 	# For wine there is no --bottle definition in the wine command itself,
 	# so we need to export a wineprefix in the launch script
 	if type == 'wine'
-		wineprefix = ENV['WINEPREFIX']
+		wineprefix = ENV['WINEPREFIX'].dup
 	end
 
 	writeWrapper(targetFile ,wwineCmd, wineCommand, $wrapperCwd, wwineInfo, args, wineprefix)
