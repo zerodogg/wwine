@@ -1,6 +1,7 @@
 Version 0.2.2
 - Fixed use of --env/--tricks with -w cx
 - Fixed --wrap for plain wine
+- Fixed --tricks with newer versions of winetricks
 
 Version 0.2.1
 - Fixed a problem that could cause wwine to fail to detect Crossover

@@ -346,15 +346,35 @@ end
 # Purpose: Sets WINE and WINEPREFIX, and then either outputs them to STDOUT, or
 # 		executes whatever native command was supplied (the logic that handles --env)
 def setEnvAndExec (wine,bottle,cmd,args,type)
-	wwineCmd, wwineInfo = generateWwineCmd(wine,nil,cmd,type)
+	if wine == nil
+		type,cmd = getAutoWithParams(bottle)
+	end
+	ENV['__WWINE_INT_WINE'] = wine
+	vputs(V_DBG,'Set __WWINE_INT_WINE='+wine)
 
-	wwineCmd.push('--env-bottle')
-	wwineCmd.push('--')
-	wwineCmd.unshift(File.expand_path($0))
+	if wine == 'cxoffice' || wine == 'cxgames' || wine == 'crossover'
+		cxdir = getCXwithParams(wine,bottle,true,false,true)
+		if File.executable?(cxdir+'/bin/wineserver')
+			vputs(V_DBG,'Set WINESERVER='+cxdir+'/bin/wineserver')
+			ENV['WINESERVER'] = cxdir+'/bin/wineserver'
+		end
+	end
 
 	if !bottle
 		puts("--env requires a --bottle")
 		exit(1)
+	end
+	vputs(V_DBG,'Set __WWINE_INT_BOTTLE='+bottle)
+	ENV['__WWINE_INT_BOTTLE'] = bottle
+	vputs(V_DBG,'Set __WWINE_INT_ENVMODE='+$version)
+	ENV['__WWINE_INT_ENVMODE'] = $version
+	if $verbosity > 0
+		vputs(V_DBG,'Set __WWINE_INT_VERBOSITY='+$verbosity.to_s)
+		ENV['__WWINE_INT_VERBOSITY'] = $verbosity.to_s
+	end
+	if $cxPath
+		vputs(V_DBG,'Set __WWINE_INT_CXPATH='+$cxpath)
+		ENV['__WWINE_INT_CXPATH'] = $cxPath
 	end
 
 	if wine == 'wine' || File.exists?(wine)
@@ -366,9 +386,9 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	end
 
 	vputs(V_INFO,"Set WINEPREFIX="+bottlePath)
-	vputs(V_INFO,"Set WINE="+wwineCmd.join(" "))
+	vputs(V_INFO,"Set WINE="+File.expand_path($0))
 	ENV['WINEPREFIX'] = bottlePath
-	ENV['WINE'] = wwineCmd.join(" ")
+	ENV['WINE'] = File.expand_path($0)
 	if args.length > 0
 		puts("Executing "+args.join(' '))
 		exec *args
@@ -883,7 +903,7 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 end
 
 # Purpose: Get parameters for crossover
-def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
+def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, getCXpath = false)
 	final = []
 	cxdir = nil
 
@@ -953,6 +973,8 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false)
 			puts('by supplying --cxinstalldir')
 		end
 		exit(1)
+	elsif getCXpath
+		return cxdir
 	end
 
 	final.push(cxdir+'/bin/cxstart')
@@ -1116,24 +1138,41 @@ def runWine (wine,bottle,args)
 	end
 end
 
-opts = GetoptLong.new(
-	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-	[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
-	[ '--drykill', GetoptLong::NO_ARGUMENT ],
-	[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--version',GetoptLong::NO_ARGUMENT ],
-	[ '--wrap', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
-	[ '--man', GetoptLong::NO_ARGUMENT ],
-	[ '--env', GetoptLong::NO_ARGUMENT ],
-	[ '--tricks', GetoptLong::NO_ARGUMENT ],
-	[ '--env-bottle', GetoptLong::NO_ARGUMENT ],
-	[ '--from', '-s', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
-)
+# Note: These environment variables are not considered a stable interface to wwine
+# (hence the version specific ENVMODE), they should never ever be used by any
+# outside program.
+if ENV['__WWINE_INT_ENVMODE'] == $version
+	opts = Hash.new
+	if ENV['__WWINE_INT_WINE']
+		opts['--wine'] = ENV['__WWINE_INT_WINE']
+	end
+	if ENV['__WWINE_INT_VERBOSITY'] && ENV['__WWINE_INT_VERBOSITY'].to_i > 0
+		$verbosity = ENV['__WWINE_INT_VERBOSITY'].to_i
+	end
+	if ENV['__WWINE_INT_CXPATH']
+		opts['--cxinstalldir'] = ENV['__WWINE_INT_CXPATH']
+	end
+	opts['--bottle'] = ENV['__WWINE_INT_BOTTLE']
+else
+	opts = GetoptLong.new(
+		[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+		[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
+		[ '--drykill', GetoptLong::NO_ARGUMENT ],
+		[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--version',GetoptLong::NO_ARGUMENT ],
+		[ '--wrap', GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
+		[ '--man', GetoptLong::NO_ARGUMENT ],
+		[ '--env', GetoptLong::NO_ARGUMENT ],
+		[ '--tricks', GetoptLong::NO_ARGUMENT ],
+		[ '--env-bottle', GetoptLong::NO_ARGUMENT ],
+		[ '--from', '-s', GetoptLong::REQUIRED_ARGUMENT ],
+		[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
+	)
+end
 
 # Handle command-line arguments
 begin
@@ -1147,6 +1186,8 @@ begin
 		when '--bottle'
 			$bottle = arg
 		when '--env-bottle'
+			puts 'DEPRECATED: --env-bottle is deprecated as of wwine 0.2.2'
+			puts '            pending removal in 0.3'
 			if ENV['WINEPREFIX'] && ENV['WINEPREFIX'].length > 0
 				$bottle = File.basename(ENV['WINEPREFIX'])
 			else
