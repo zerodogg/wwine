@@ -116,8 +116,7 @@ I<--tricks -- --help>
 
 =item B<--env-bottle>
 
-This option is primarily for internal use. It causes wwine to parse which
---bottle to use from the WINEPREFIX variable.
+This option has been deprecated as of 0.2.2, and will be removed in 0.3.
 
 =item B<-c, --cxinstalldir> I<PATH>
 
