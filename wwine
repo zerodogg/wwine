@@ -185,6 +185,8 @@ def getFromEnviron(path)
 			info['bottle'] = env['WINEPREFIX'].sub(/^.*\/([^\/]+)$/,'\1').chomp
 		elsif env['__WWINE_INT_XBOTTLE']
 			info['bottle'] = env['__WWINE_INT_XBOTTLE']
+		else
+			info['bottle'] = '(default)'
 		end
 		if env['CX_ROOT'] && env['CX_ROOT'].match(/cxoffice/)
 			info['wine'] = 'crossover'
