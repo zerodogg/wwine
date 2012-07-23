@@ -68,7 +68,12 @@ used.
 
 =item B<-k, --kill>
 
-Attempt to kill all running wine processes. See also I<--drykill>
+Attempt to kill running wine processes. See also I<--drykill>.
+
+By default it will kill all running wine processes. If you are on Linux then
+you can combine this option with the I<--bottle> and/or I<--wine> options to
+limit it to killing only processes in a specific bottle and/or running under a
+specific wine.
 
 The default signal is SIGTERM, however you can supply any signal number
 you want (ie. "wwine -k9").
@@ -242,6 +247,10 @@ sending them the TERM signal.
 
 Will make wwine attempt to kill all running wine processes on this system by
 sending them the KILL signal. Should only be used if "wwine -k" fails.
+
+=item I<wwine --bottle test --wine cx --kill>
+
+Kill any crossover processes running in the bottle "test".
 
 =back
 

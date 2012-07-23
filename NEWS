@@ -1,3 +1,9 @@
+Version 0.3
+- Output from --kill and --drykill now lists bottle and wine flavour
+  under Linux
+- You can now combine --kill and --drykill with --wine and/or --bottle
+  under Linux
+
 Version 0.2.2
 - Fixed use of --env/--tricks with -w cx
 - Fixed --wrap for plain wine

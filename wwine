@@ -20,7 +20,7 @@ require 'getoptlong'
 # To read info for --debuginfo
 require 'open3'
 # Application version
-$version = '0.2.2'
+$version = '0.3'
 # The wine flavour to use
 $wine = nil
 # The bottle to use
@@ -37,13 +37,21 @@ $wwineDataFrom = nil
 $envMode = false
 # true if we're in --tricks mode
 $tricksMode = false
+# A positive integer if we're in --kill or --drykill mode
+# (--drykill = 9999)
+$killMode = nil
 # Verbosity level
 $verbosity = 0
 V_INFO=1
 V_DBG=2
 
 # Purpose: Attempt to kill all running wine processes
-def killWine (dryRun = false, signal = 15)
+def killWine (signal)
+	dryRun = false
+	if signal == 9999
+		dryRun = true
+		signal = 15
+	end
 	# Open a pipe to ps to read processes
 	wines = IO.popen('ps uxw')
 	# True if we have killed something
@@ -70,6 +78,13 @@ def killWine (dryRun = false, signal = 15)
 	else
 		sigName = 'signal '+signal
 	end
+	if !dryRun
+		print 'Sending '+sigName+' to the following processes:'+"\n\n"
+	else
+		print 'Would send '+sigName+' to the following processes:'+"\n\n"
+	end
+	format = "%-10s %-12s %-8s %-20s\n"
+	printf(format,'Wine','Bottle','PID','Command')
 	# Go through each line in the 'ps' output
 	wines.each do |line|
 		# True if we *require* /proc to be read for this process.
@@ -127,22 +142,63 @@ def killWine (dryRun = false, signal = 15)
 		end
 		# Clean up the name
 		name.sub!(/\s*$/,'')
+		extra = getFromEnviron('/proc/'+pid+'/environ')
+		if $wine && resolveWine($wine) != extra['wine']
+			next
+		elsif $bottle && $bottle != extra['bottle']
+			next
+		end
+		# Output information
+		printf(format,extra['wine'],extra['bottle'],pid,name)
 		# Send SIGTERM (or output information if in dryRun mode)
 		if !dryRun
-			puts 'Sending '+sigName+' to '+name+' (PID '+pid+')'
 			begin
 				Process.kill(signal,pid.to_i)
 			rescue 
 				puts('Error while attempting to send signal to '+pid+': '+$!)
 			end
-		else
-			puts 'Would send '+sigName+' to '+name+' (PID '+pid+')'
 		end
 		killed = true
 	end
 	if ! killed
 		puts 'No wine processes found.'
 	end
+end
+
+# Purpose: Get information from /proc/PID/environ
+def getFromEnviron(path)
+	info = Hash.new
+	info['bottle'] = '(?)'
+	info['wine'] = '(?)'
+	if File.readable?(path)
+		source = File.open(path)
+		env = Hash.new
+		source.each("\0") do |entry|
+			key = entry.sub(/^([^=]+)=.*$/,'\1').chomp
+			value = entry.sub(/^[^=]+=(.*)$/,'\1').chomp
+			env[key] = value
+		end
+
+		if env['CX_BOTTLE']
+			info['bottle'] = env['CX_BOTTLE']
+		elsif env['WINEPREFIX']
+			info['bottle'] = env['WINEPREFIX'].sub(/^.*\/([^\/]+)$/,'\1').chomp
+		elsif env['__WWINE_INT_XBOTTLE']
+			info['bottle'] = env['__WWINE_INT_XBOTTLE']
+		end
+		if env['CX_ROOT'] && env['CX_ROOT'].match(/cxoffice/)
+			info['wine'] = 'crossover'
+		elsif env['CX_ROOT'] && env['CX_ROOT'].match(/cxgames/)
+			info['wine'] = 'cxgames'
+		elsif env['__WWINE_INT_XWINE']
+			info['wine'] = env['__WWINE_INT_XWINE']
+		elsif env['WINELOADER']
+			info['wine'] = 'wine'
+		end
+		info['wine'].sub!(/\0/,'')
+		info['bottle'].sub!(/\0/,'')
+	end
+	return info
 end
 
 # Purpose: Print formatted --help output
@@ -499,7 +555,7 @@ def loadWwineDataFromFile (file,dryRun = false)
 		end
 
 		# Set the command to run
-		if ! dryRun && !$envMode
+		if ! dryRun && !$envMode && !$killMode
 			if $wrapperPath
 				out = 'Program command'
 			else
@@ -1134,6 +1190,12 @@ def runWine (wine,bottle,args)
 	elsif $wrapperPath != nil
 		generateWrapper(wine,bottle,$wrapperPath,cmd,args,type)
 	else
+		vputs(V_DBG,'Set __WWINE_INT_XWINE='+wine)
+		ENV['__WWINE_INT_XWINE'] = resolveWine(wine)
+		if bottle
+			vputs(V_DBG,'Set __WWINE_INT_XBOTTLE='+bottle)
+			ENV['__WWINE_INT_XBOTTLE'] = bottle
+		end
 		runcmd(cmd)
 	end
 end
@@ -1174,6 +1236,19 @@ else
 	)
 end
 
+# Purpose: Resolve a wine to its proper name
+def resolveWine(wine)
+	map = Hash.new()
+	map['cx'] = 'crossover'
+	map['cxo'] = 'crossover'
+	map['cxoffice'] = 'crossover'
+	map['cxg'] = 'cxgames'
+	if(map[wine])
+		wine = map[wine]
+	end
+	return wine
+end
+
 # Handle command-line arguments
 begin
 	opts.each do |opt, arg|
@@ -1197,17 +1272,14 @@ begin
 		when '--verbose'
 			$verbosity = $verbosity+1
 		when '--drykill'
-			killWine(true)
-			exit(0)
+			$killMode = 9999
 		when '--debuginfo'
 			debugInfo()
 		when '--kill'
-			begin
-				killWine(false,arg)
-			rescue
-				puts "Error while attempting to kill processes: "+$!
+			if arg == nil
+				arg = 15
 			end
-			exit(0)
+			$killMode = arg
 		when '--cxinstalldir'
 			$cxPath = arg
 			if ! File.exists?($cxPath)
@@ -1238,13 +1310,26 @@ begin
 		puts('--verbose assumed because the environment variable WWINE_VERBOSE is set to 1')
 		$verbosity = 1
 	end
-rescue
-	puts('See --help for more inforation')
+rescue => ex
+	if opts.error?
+		puts('See --help for more inforation')
+	else
+		handleException(ex)
+	end
 	exit(1)
 end
 
 if $wwineDataFrom
 	loadWwineDataFromFile($wwineDataFrom)
+end
+
+if $killMode != nil
+	begin
+		killWine($killMode)
+	rescue
+		puts "Error while attempting to kill processes: "+$!
+	end
+	exit(0)
 end
 
 if ARGV.length == 0 && !$envMode
