@@ -435,7 +435,7 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 
 	if wine == 'wine' || File.exists?(wine)
 		bottlePath = ENV['WINEPREFIX']
-	elsif wine == 'cedega'
+	elsif resolveWine(wine) == 'gametree'
 		bottlePath = ENV['HOME']+'/.cedega/'+bottle
 	else
 		bottlePath = getCXwithParams(wine,bottle,true,true)
@@ -714,10 +714,10 @@ def getWineVersion (source = 'wine', fromStderr = false, cmdOpt = '--version')
 end
 
 # Purpose: Get cedega version string
-def getCedegaVersionString ()
+def getGameTreeVersionString ()
 	cedegaVer = nil
 
-	if inPath('cedega')
+	if inPath('cedega') || inPath('gametree')
 		begin
 			# We need the HOME variable
 			if ENV.has_key?('HOME')
@@ -860,8 +860,8 @@ def debugInfo ()
 		printf(outFormat,'Crossover Games',cxgVer)
 		printf(outFormat,'Crossover',cxoVer)
 
-		cedegaVer = getCedegaVersionString()
-		printf(outFormat,'Cedega',cedegaVer)
+		cedegaVer = getGameTreeVersionString()
+		printf(outFormat,'GameTree Linux',cedegaVer)
 	rescue => ex
 		handleException(ex)
 	end
@@ -1058,20 +1058,25 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, g
 	end
 end
 
-# Purpose: Get parameters for cedega
-def getCedegaWithParams (wine,bottle, missingIsFatal = true)
+# Purpose: Get parameters for gametree
+def getGameTreeWithParams (wine,bottle, missingIsFatal = true)
 	final = []
+	gametreeBin = nil
 
-	if not inPath('cedega')
+	if inPath('gametree')
+		gametreeBin = 'gametree'
+	elsif inPath('gametree')
+		gametreeBin = 'cedega'
+	else
 		if missingIsFatal
-			puts('cedega does not appear to be installed')
+			puts('gametree does not appear to be installed')
 			exit(1)
 		else
 			return nil
 		end
 	end
 
-	final.push('cedega','--install')
+	final.push(gametreeBin,'--install')
 
 	# Use wwineFolder as the folder if no bottle was supplied
 	if (bottle == nil || bottle.length == 0)
@@ -1079,7 +1084,7 @@ def getCedegaWithParams (wine,bottle, missingIsFatal = true)
 	end
 	final.push(bottle)
 
-	vputs(V_DBG,'Detected cedega: '+final.join(' '))
+	vputs(V_DBG,'Detected gametree: '+final.join(' '))
 	return final
 end
 
@@ -1097,8 +1102,8 @@ def getAutoWithParams (bottle, missingIsFatal = true, returnFlavour = false)
 		type = 'cxoffice'
 	end
 	if cmd == nil
-		cmd = getCedegaWithParams('cedega',bottle,false)
-		type = 'cedega'
+		cmd = getGameTreeWithParams('gametree',bottle,false)
+		type = 'gametree'
 	end
 	if cmd == nil
 		if missingIsFatal
@@ -1146,8 +1151,8 @@ def runWine (wine,bottle,args)
 		elsif wine == 'wine' || File.executable?(wine)
 			type = 'wine'
 			cmd = getWineWithParams(wine,bottle)
-		elsif wine == 'cedega'
-			cmd = getCedegaWithParams(wine,bottle)
+		elsif resolveWine(wine) == 'gametree'
+			cmd = getGameTreeWithParams(wine,bottle)
 		else
 			puts('Unknown --wine: '+wine)
 			puts('Must be one of: wine, crossover, cxgames, cedega, or the path to a wine executable')
@@ -1176,7 +1181,7 @@ def runWine (wine,bottle,args)
 			exit
 		# For cedega we just output an invalid version number in the same syntax
 		# as vanilla wine would have done
-		elsif wine == 'cedega'
+		elsif resolveWine(wine) == 'gametree'
 			puts 'wine-0.0.0'
 			exit
 		end
@@ -1190,8 +1195,9 @@ def runWine (wine,bottle,args)
 	elsif $wrapperPath != nil
 		generateWrapper(wine,bottle,$wrapperPath,cmd,args,type)
 	else
+		wine = resolveWine(wine)
 		vputs(V_DBG,'Set __WWINE_INT_XWINE='+wine)
-		ENV['__WWINE_INT_XWINE'] = resolveWine(wine)
+		ENV['__WWINE_INT_XWINE'] = wine
 		if bottle
 			vputs(V_DBG,'Set __WWINE_INT_XBOTTLE='+bottle)
 			ENV['__WWINE_INT_XBOTTLE'] = bottle
@@ -1243,6 +1249,7 @@ def resolveWine(wine)
 	map['cxo'] = 'crossover'
 	map['cxoffice'] = 'crossover'
 	map['cxg'] = 'cxgames'
+	map['cedega'] = 'gametree'
 	if(map[wine])
 		wine = map[wine]
 	end

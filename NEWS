@@ -3,6 +3,7 @@ Version 0.3
   under Linux
 - You can now combine --kill and --drykill with --wine and/or --bottle
   under Linux
+- Improved support for GameTree Linux
 
 Version 0.2.2
 - Fixed use of --env/--tricks with -w cx
