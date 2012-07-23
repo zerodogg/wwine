@@ -71,9 +71,9 @@ used.
 Attempt to kill running wine processes. See also I<--drykill>.
 
 By default it will kill all running wine processes. If you are on Linux then
-you can combine this option with the I<--bottle> and/or I<--wine> options to
-limit it to killing only processes in a specific bottle and/or running under a
-specific wine.
+you can combine this option with the I<--bottle> and/or I<--wine> (or even
+I<--from>) options to limit it to killing only processes in a specific bottle
+and/or running under a specific wine.
 
 The default signal is SIGTERM, however you can supply any signal number
 you want (ie. "wwine -k9").
