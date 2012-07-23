@@ -238,6 +238,10 @@ winetricks, which would be told to install "vcrun6". Because it is running
 under wwine's --env parameter, winetricks will use wwine to perform
 the actions, thus allowing you to use winetricks with cxgames.
 
+=item I<wwine -w cxg -b file --tricks vcrun6>
+
+This is the same as the above, but using wwine's builtin support for winetricks.
+
 =item I<wwine -k>
 
 Will make wwine attempt to kill all running wine processes on this system by
