@@ -888,10 +888,10 @@ end
 # Purpose: Get parameters for wine
 def getWineWithParams (wine,bottle, missingIsFatal = true)
 	final = []
-	possibleWines = [ 'wine32','wine','wine64','wine.bin','wine.real' ]
+	possibleWines = [ 'wine32','wine','wine64','wine.bin','wine.real','wine-unstable','wine32-unstable' ]
 	# Manual search path, in the odd case none of the above are in $PATH.
 	# Ie. /usr/lib32/wine/wine.bin is the real wine binary on Debian
-	searchPath = [ '/usr/lib32/wine/','/usr/bin' ]
+	searchPath = [ '/usr/lib32/wine/','/usr/bin','/usr/lib/i386-linux-gnu/wine-unstable','/usr/lib/i386-linux-gnu/wine', ]
 	# If wine is not a path or does not exist, check for wine in the path
 	if !File.exists?(wine)
 		wine = nil
