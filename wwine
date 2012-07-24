@@ -504,6 +504,15 @@ def loadWwineDataFromFile (file,dryRun = false)
 			info = parseWwineDataV2(info);
 		elsif info['Info'].match(/^v1/)
 			info = parseWwineDataV1(info)
+			if ! $wrapperPath
+				puts "-- Note: --"
+				puts "This file is using the wwine metadata format v1."
+				puts "This format has been deprecated and support for it will be dropped in"
+				puts "a later version of wwine. You may upgrade it with this command:"
+				puts "wwine --from "+shellQuote(file)+" --wrap "+shellQuote(file+'.new')+" && mv "+shellQuote(file)+" "+shellQuote(file+'.old')+' && mv '+shellQuote(file+'.new')+' '+shellQuote(file)
+				puts "--       --"
+				puts ""
+			end
 		else
 			version = info['Info'].sub(/^(v\S+).+/,'\1').chomp
 			puts "This version of wwine supports info format v1 and v2."
