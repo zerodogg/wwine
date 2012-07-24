@@ -1143,12 +1143,7 @@ def runWine (wine,bottle,args)
 		wine = type
 	else
 		# Expand cx*
-		if wine == 'cxg'
-			wine = 'cxgames'
-		elsif wine == 'cxo' || wine == 'cx' || wine == 'cxoffice'
-			wine = 'crossover'
-		end
-
+		wine = resolveWine(wine)
 		type = wine
 
 		if wine == 'cxgames' || wine == 'cxoffice' || wine == 'crossover'
