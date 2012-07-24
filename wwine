@@ -849,6 +849,11 @@ def debugInfo ()
 		end
 		printf(outFormat,'Wine',wineVer)
 
+		if File.executable?($wine) and not File.directory?($wine)
+			otherWver = getWineVersion($wine)
+			printf(outFormat,'--wine',otherWver+' ('+$wine+')')
+		end
+
 		cxgBin = getCXwithParams('cxgames',nil,false)
 		cxgVer = getCXVersionsFrom(cxgBin,true)
 
