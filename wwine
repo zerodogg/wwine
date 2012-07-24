@@ -869,11 +869,10 @@ def debugInfo ()
 		cxoBin = getCXwithParams('cxoffice',nil,false)
 		cxoVer = getCXVersionsFrom(cxoBin,true)
 
-		if(cxoBin && !cxgBin)
-			cxgVer = '(not available - aliased to crossover)'
+		if (cxgBin || !cxoBin)
+			printf(outFormat,'Crossover Games',cxgVer)
 		end
 
-		printf(outFormat,'Crossover Games',cxgVer)
 		printf(outFormat,'Crossover',cxoVer)
 
 		cedegaVer = getGameTreeVersionString()
