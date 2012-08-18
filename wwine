@@ -858,7 +858,7 @@ def debugInfo ()
 		end
 		printf(outFormat,'Wine',wineVer)
 
-		if File.executable?($wine) and not File.directory?($wine)
+		if $wine != nil and File.executable?($wine) and not File.directory?($wine)
 			otherWver = getWineVersion($wine)
 			printf(outFormat,'--wine',otherWver+' ('+$wine+')')
 		end
