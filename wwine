@@ -1246,7 +1246,6 @@ else
 		[ '--man', GetoptLong::NO_ARGUMENT ],
 		[ '--env', GetoptLong::NO_ARGUMENT ],
 		[ '--tricks', GetoptLong::NO_ARGUMENT ],
-		[ '--env-bottle', GetoptLong::NO_ARGUMENT ],
 		[ '--from', '-s', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 	)
@@ -1277,15 +1276,6 @@ begin
 			$wine = arg
 		when '--bottle'
 			$bottle = arg
-		when '--env-bottle'
-			puts 'DEPRECATED: --env-bottle is deprecated as of wwine 0.2.2'
-			puts '            pending removal in 0.3'
-			if ENV['WINEPREFIX'] && ENV['WINEPREFIX'].length > 0
-				$bottle = File.basename(ENV['WINEPREFIX'])
-			else
-				puts 'wwine: --env-bottle supplied but WINEPREFIX is not set'
-				exit(1)
-			end
 		when '--verbose'
 			$verbosity = $verbosity+1
 		when '--drykill'

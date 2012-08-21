@@ -119,10 +119,6 @@ I<--tricks -- --help>
 
 =back
 
-=item B<--env-bottle>
-
-This option has been deprecated as of 0.2.2, and will be removed in 0.3.
-
 =item B<-c, --cxinstalldir> I<PATH>
 
 Use the supplied path as the path to a crossover install directory, or as a
