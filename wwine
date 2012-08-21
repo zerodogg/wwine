@@ -300,10 +300,9 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	file.puts('#')
 	file.puts('# -- Begin wwine metadata --')
 	file.puts('# wwineInfo: v2')
-	file.puts('# wwineDir: '+wwineInfo[0])
-	file.puts('# wwineWine: '+wwineInfo[1])
-	file.puts('# wwineBottle: '+wwineInfo[2])
-	file.puts('# wwineCxinstalldir: '+wwineInfo[3])
+	wwineInfo.each do |key,value|
+		file.puts('# wwine'+key+': '+value)
+	end
 	# wwineCmd isn't used in v2, but v1 outputs an invalid message if it
 	# doesn't exist. wwineCmd (unnumbered) will be dropped in a later version.
 	file.puts('# wwineCmd: nil')
@@ -350,7 +349,12 @@ end
 # Purpose: Generate a wwine command and wwineInfo array
 def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	wwineCmd = []
-	wwineInfo = ['nil','nil','nil','nil']
+	wwineInfo = {
+		'Cxinstalldir' => 'nil',
+		'Dir' => 'nil',
+		'Bottle' => 'nil',
+		'Wine' => 'nil'
+	}
 
 	# Generate a wwine command-line
 	if $verbosity > 0
@@ -358,15 +362,15 @@ def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	end
 	if $cxPath
 		wwineCmd.push('--cxinstalldir',$cxPath)
-		wwineInfo[3] = $cxPath
+		wwineInfo['Cxinstalldir'] = $cxPath
 	end
 	if wine
 		wwineCmd.push('--wine',wine)
-		wwineInfo[1] = wine
+		wwineInfo['Wine'] = wine
 	end
 	if bottle
 		wwineCmd.push('--bottle',bottle)
-		wwineInfo[2] = bottle;
+		wwineInfo['Bottle'] = bottle;
 	end
 	return wwineCmd, wwineInfo
 end
@@ -393,7 +397,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 		$wrapperCwd = Dir.pwd
 	end
 
-	wwineInfo[0] = $wrapperCwd
+	wwineInfo['Dir'] = $wrapperCwd
 
 	wineprefix = nil
 
