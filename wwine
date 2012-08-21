@@ -322,6 +322,11 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	file.puts("\t"+'wwine="`which wwine 2> /dev/null`"')
 	file.puts('fi')
 	file.puts('if [ "x$wwine" != "x" ]; then')
+	# _WWINE_SCRIPT is currently unused, but is present so that wwine can try
+	# to use '--from' automatically in the future if for some reason there are
+	# backwards-incompatible changes to one of the command-line parameters used
+	# by scripts.
+	file.puts("\t"+'export _WWINE_SCRIPT="$0"')
 	file.puts("\t"+'exec "$wwine" '+shellQuote(wwineCommand).join(" ")+' "$@"')
 	file.puts('else')
 	# Add wineprefix if needed. This is used when --wine is wine because wine
