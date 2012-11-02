@@ -6,6 +6,7 @@ Version 0.3
 - Improved support for GameTree Linux
 - Fixed a crash-bug when --wrap was used with -w wine without a --bottle
 - Removed the deprecated parameter '--env-bottle'
+- Added --cxg-installdir
 
 Version 0.2.2
 - Fixed use of --env/--tricks with -w cx

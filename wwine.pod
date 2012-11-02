@@ -122,7 +122,12 @@ I<--tricks -- --help>
 =item B<-c, --cxinstalldir> I<PATH>
 
 Use the supplied path as the path to a crossover install directory, or as a
-directory that contains a crossover, cxoffice and/or cxgames directory.
+directory that contains a crossover directory.
+
+=item B<-C, --cxg-installdir> I<PATH>
+
+Use the supplied path as the path to a cxgames install directory, or as a
+directory that contains a cxgames directory.
 
 =item B<--wrap> I<PATH>
 
