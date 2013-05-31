@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 # wwine
-# Copyright (C) Eskild Hustvedt 2009, 2010, 2011, 2012
+# Copyright (C) Eskild Hustvedt 2009, 2010, 2011, 2012, 2013
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -128,7 +128,6 @@ def killWine (signal)
 
 			# /exe test
 		if File.readable?('/proc/'+pid+'/exe') and File.symlink?('/proc/'+pid+'/exe')
-			linkValue = File.readlink('/proc/'+pid+'/exe')
 			if File.readlink('/proc/'+pid+'/exe') !~ /\/[^\/]*wine[^\/]*$/i
 				next
 			end
@@ -510,8 +509,9 @@ def loadWwineDataFromFile (file,dryRun = false)
 		end
 
 		info = Hash.new
-		wwineInfo = ''
-		wwineCmd = ''
+		# Default entries
+		info['CxGamesinstalldir'] = 'nil'
+		info['Cxinstalldir'] = 'nil'
 
 		source.each do |line|
 			if line.match(/^#\s+wwine/)
