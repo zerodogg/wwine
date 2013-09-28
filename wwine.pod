@@ -259,6 +259,31 @@ Kill any crossover processes running in the bottle "test".
 
 =back
 
+=head1 SUPPORTED WINE FLAVOURS
+
+The following flavours of wine are supported:
+
+=over
+
+=item B<Wine>
+
+Regular wine. L<http://www.winehq.org/>
+
+=item B<Crossover> and B<Crossover Office/Games>
+
+The commercial Crossover release from Codeweavers, as well as the legacy
+versions "Crossover Office" and "Crossover Games". L<http://www.codeweavers.com/>
+
+=item B<PlayOnLinux>
+
+Wine packages installed via PlayOnLinux. L<http://www.playonlinux.com/>
+
+=item B<GameTree Linux/Cedega>
+
+The unmaintained Cedega flavour of wine.
+
+=back
+
 =head1 DEPENDENCIES
 
 Requires at least one of wine, crossover, cxoffice, cxgames or cedega.

@@ -7,6 +7,7 @@ Version 0.3
 - Fixed a crash-bug when --wrap was used with -w wine without a --bottle
 - Removed the deprecated parameter '--env-bottle'
 - Added --cxg-installdir
+- Added support for wine packages installed via PlayOnLinux
 
 Version 0.2.2
 - Fixed use of --env/--tricks with -w cx

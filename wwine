@@ -343,6 +343,12 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 		file.puts("\t"+'export WINEPREFIX='+shellQuote(wineprefix))
 		file.puts("\t"+"export WINEDEBUG='-all'");
 	end
+	if wwineInfo['Wine'] =~ /^pol/i
+		path = getPOLwithParams(wwineInfo['Wine'].sub(/^pol[-:]?/i,''),nil,false,true)
+		file.puts("\t"+'export WINESERVER='+shellQuote(path+'/bin/wineserver'))
+		file.puts("\t"+'export WINELOADER='+shellQuote(path+'/bin/wine'))
+		file.puts("\t"+'export WINEDLLPATH='+shellQuote(path+'/lib/wine'))
+	end
 	file.puts("\t"+"exec "+shellQuote(otherCommand).join(" ")+' "$@"')
 	file.puts('fi')
 	file.puts('echo "Launch script failed. No wwine found and wine command failed to exec."')
@@ -1140,6 +1146,40 @@ def getGameTreeWithParams (wine,bottle, missingIsFatal = true)
 	return final
 end
 
+# Purpose: Get parameters for PlayOnLinux
+def getPOLwithParams(wine,bottle, missingIsFatal = true, returnDetected = false)
+	winePaths = [ ENV['HOME']+'/.PlayOnLinux/wine/linux-x86', ENV['HOME']+'/.PlayOnLinux/wine/linux-amd64' ]
+	detectedWine = nil
+	detectedWineDir = nil
+	winePaths.each do |path|
+		if File.exists?(path+'/'+wine+'/bin/wine')
+			detectedWine = path+'/'+wine+'/bin/wine'
+			detectedWineDir = path+'/'+wine
+		end
+	end
+
+	if returnDetected
+		return detectedWine
+	end
+
+	if not detectedWine
+		if !missingIsFatal
+			vputs(V_DBG,'Failed to locate wine '+wine)
+			return nil
+		end
+		puts('There does not appear to be a wine named "'+wine+'"')
+		puts('installed via PlayOnLinux. See "wwine --list" for a list of available wine versions.')
+		exit(1)
+	end
+
+	envPut('PATH',detectedWineDir+'/bin/:'+ENV['PATH'])
+	envPut('WINESERVER',detectedWineDir+'/bin/wineserver')
+	envPut('WINELOADER',detectedWine)
+	envPut('WINEDLLPATH',detectedWineDir+'/lib/wine:'+ENV['WINEDLLPATH'].to_s)
+	envPut('LD_LIBRARY_PATH',detectedWineDir+'/lib:'+ENV['LD_LIBRARY_PATH'].to_s)
+	getWineWithParams(detectedWine,bottle,missingIsFatal)
+end
+
 # Purpose: Detect which wine to use and get parameters for that one
 # Returns: type,cmd
 def getAutoWithParams (bottle, missingIsFatal = true, returnFlavour = false)
@@ -1200,6 +1240,9 @@ def runWine (wine,bottle,args)
 			cmd = getWineWithParams(wine,bottle)
 		elsif resolveWine(wine) == 'gametree'
 			cmd = getGameTreeWithParams(wine,bottle)
+		elsif wine =~ /^pol[-:]?/i
+			realWine = wine.sub(/^pol[-:]?/i,'')
+			cmd = getPOLwithParams(realWine,bottle)
 		else
 			puts('Unknown --wine: '+wine)
 			puts('Must be one of: wine, crossover, cxgames, cedega, or the path to a wine executable')
