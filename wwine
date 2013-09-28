@@ -684,9 +684,10 @@ def Help ()
 	puts "Usage: wwine (WWINE PARAMETERS) PROGRAM -- [PROGRAM ARGUMENTS]"
 	puts ""
 	printHelp('-h','--help','Display this help text')
-	printHelp('-w','--wine','Select the wine to use: wine, crossover, cxgames, cedega, or a path to a wine bin. Default: wine')
+	printHelp('-w','--wine','Select the wine to use. Any wine listed in "wwine --list" or the path to a wine binary.')
 	printHelp('-b','--bottle','Use the selected bottle (~/.wwinebottles/[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
 	printHelp('','--env','Set the WINE and WINEPREFIX environment variables to match the parameters provided to wwine and optionally run a program with those variables set.')
+	printHelp('-l','--list','List all available wine versions')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
 	printHelp('','--drykill','Print what --kill would have done, but don\'t actually do anything')
 	printHelp('-c','--cxinstalldir','Use the supplied path as the install path for Crossover (default: autodetect).')
@@ -854,7 +855,7 @@ end
 
 # Purpose: Print debugging info
 def debugInfo ()
-	outFormat = '%-20s: %s'+"\n"
+	outFormat = '%-30s: %s'+"\n"
 	puts "wwine "+$version
 	# Load a --from file if it is set
 	if $wwineDataFrom
@@ -877,20 +878,27 @@ def debugInfo ()
 		printf(outFormat,'wwine md5sum','(exception: '+$!+')');
 	end
 
-	begin
+	listWines(true)
+	exit(0)
+end
 
+# Purpose: List available wine versions
+def listWines(debug = false)
+	outFormat = '%-30s: %s'+"\n"
+	begin
 		defaultWine,defaultWCMD = getAutoWithParams(nil,false)
+		if !debug
+			puts('Available wine versions:')
+		end
 		if defaultWine == nil
 			defaultWine = '(no wine found)'
 		end
-		printf(outFormat,'Default flavour',defaultWine)
+		printf(outFormat,'(default wine)',defaultWine)
 
 		if inPath('wine')
 			wineVer = getWineVersion()
-		else
-			wineVer = '(not present)'
+			printf(outFormat,'wine',wineVer)
 		end
-		printf(outFormat,'Wine',wineVer)
 
 		if $wine != nil and File.executable?($wine) and not File.directory?($wine)
 			otherWver = getWineVersion($wine)
@@ -904,17 +912,25 @@ def debugInfo ()
 		cxoVer = getCXVersionsFrom(cxoBin,true)
 
 		if (cxgBin || !cxoBin)
-			printf(outFormat,'Crossover Games',cxgVer)
+			printf(outFormat,'cxgames',cxgVer)
 		end
 
-		printf(outFormat,'Crossover',cxoVer)
+		if cxoVer
+			printf(outFormat,'crossover (cx)',cxoVer)
+		end
 
 		cedegaVer = getGameTreeVersionString()
-		printf(outFormat,'GameTree Linux',cedegaVer)
+		if cedegaVer
+			printf(outFormat,'gametree',cedegaVer)
+		end
+
+		Dir.glob(ENV['HOME']+'/.PlayOnLinux/wine/linux-*/*') do |dir|
+			name = dir.sub(/^.*\/([^\/]+)/,'\1')
+			printf(outFormat,'pol-'+name,getWineVersion(dir+'/bin/wine'))
+		end
 	rescue => ex
 		handleException(ex)
 	end
-	exit(0)
 end
 
 # Purpose: Handle an exception
@@ -1322,6 +1338,7 @@ else
 		[ '--wrap', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--wrapdir', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--debuginfo', GetoptLong::NO_ARGUMENT ],
+		[ '--list-wines','--list','-l', GetoptLong::NO_ARGUMENT ],
 		[ '--man', GetoptLong::NO_ARGUMENT ],
 		[ '--env', GetoptLong::NO_ARGUMENT ],
 		[ '--tricks', GetoptLong::NO_ARGUMENT ],
@@ -1361,6 +1378,9 @@ begin
 			$killMode = 9999
 		when '--debuginfo'
 			debugInfo()
+		when '--list-wines'
+			listWines()
+			exit(0)
 		when '--kill'
 			if arg == nil
 				arg = 15
