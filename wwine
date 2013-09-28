@@ -428,14 +428,12 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	if wine == nil
 		type,cmd = getAutoWithParams(bottle)
 	end
-	ENV['__WWINE_INT_WINE'] = wine
-	vputs(V_DBG,'Set __WWINE_INT_WINE='+wine)
+	envPut('_WWINE_INT_WINE',wine)
 
 	if wine == 'cxoffice' || wine == 'cxgames' || wine == 'crossover'
 		cxdir = getCXwithParams(wine,bottle,true,false,true)
 		if File.executable?(cxdir+'/bin/wineserver')
-			vputs(V_DBG,'Set WINESERVER='+cxdir+'/bin/wineserver')
-			ENV['WINESERVER'] = cxdir+'/bin/wineserver'
+			envPut('WINESERVER',cxdir+'/bin/wineserver')
 		end
 	end
 
@@ -443,21 +441,16 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		puts("--env requires a --bottle")
 		exit(1)
 	end
-	vputs(V_DBG,'Set __WWINE_INT_BOTTLE='+bottle)
-	ENV['__WWINE_INT_BOTTLE'] = bottle
-	vputs(V_DBG,'Set __WWINE_INT_ENVMODE='+$version)
-	ENV['__WWINE_INT_ENVMODE'] = $version
+	envPut('__WWINE_INT_BOTTLE',bottle);
+	envPut('__WWINE_INT_ENVMODE',$version)
 	if $verbosity > 0
-		vputs(V_DBG,'Set __WWINE_INT_VERBOSITY='+$verbosity.to_s)
-		ENV['__WWINE_INT_VERBOSITY'] = $verbosity.to_s
+		envPut('__WWINE_INT_VERBOSITY',$verbosity.to_s)
 	end
 	if $cxPath
-		vputs(V_DBG,'Set __WWINE_INT_CXPATH='+$cxPath)
-		ENV['__WWINE_INT_CXPATH'] = $cxPath
+		envPut('__WWINE_INT_CXPATH',$cxPath);
 	end
 	if $cxgPath
-		vputs(V_DBG,'Set __WWINE_INT_CXGPATH='+$cxgPath)
-		ENV['__WWINE_INT_CXGPATH'] = $cxgPath
+		envPut('__WWINE_INT_CXGPATH',$cxgPath);
 	end
 
 	if wine == 'wine' || File.exists?(wine)
@@ -468,10 +461,8 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
 
-	vputs(V_INFO,"Set WINEPREFIX="+bottlePath)
-	vputs(V_INFO,"Set WINE="+File.expand_path($0))
-	ENV['WINEPREFIX'] = bottlePath
-	ENV['WINE'] = File.expand_path($0)
+	envPut('WINEPREFIX',bottlePath)
+	envPut('WINE',File.expand_path($0))
 	if args.length > 0
 		puts("Executing "+args.join(' '))
 		exec *args
@@ -672,6 +663,12 @@ def vputs (level,str)
 	if $verbosity >= level
 		puts(str)
 	end
+end
+
+# Purpose: Set an environment variable
+def envPut (name,value)
+	vputs(V_DBG,'Set '+name+'='+value)
+	ENV[name] = value;
 end
 
 # Purpose: Print the help output
@@ -990,14 +987,12 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 				end
 			end
 		end
-		ENV['WINEPREFIX'] = bottle
-		vputs(V_INFO,'Set WINEPREFIX='+bottle)
+		envPut('WINEPREFIX',bottle)
 	end
 
 	# Default to no debugging output if WINEDEBUG is not set yet
 	if ! ENV.has_key?('WINEDEBUG')
-		vputs(V_INFO,'Set WINEDEBUG=-all')
-		ENV['WINEDEBUG'] = '-all'
+		envPut('WINEDEBUG','-all')
 	end
 
 	vputs(V_DBG,'Detected wine: '+final.join(' '))
@@ -1248,11 +1243,9 @@ def runWine (wine,bottle,args)
 		generateWrapper(wine,bottle,$wrapperPath,cmd,args,type)
 	else
 		wine = resolveWine(wine)
-		vputs(V_DBG,'Set __WWINE_INT_XWINE='+wine)
-		ENV['__WWINE_INT_XWINE'] = wine
+		envPut('__WWINE_INT_XWINE',wine);
 		if bottle
-			vputs(V_DBG,'Set __WWINE_INT_XBOTTLE='+bottle)
-			ENV['__WWINE_INT_XBOTTLE'] = bottle
+			envPut('__WWINE_INT_XBOTTLE',bottle);
 		end
 		runcmd(cmd)
 	end
