@@ -421,7 +421,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 
 	# For wine there is no --bottle definition in the wine command itself,
 	# so we need to export a wineprefix in the launch script
-	if type == 'wine' && ENV['WINEPREFIX']
+	if (type == 'wine' || type =~ /^pol[-:]/) && ENV['WINEPREFIX']
 		wineprefix = ENV['WINEPREFIX'].dup
 	end
 
@@ -961,7 +961,7 @@ def handleException(ex)
 end
 
 # Purpose: Get parameters for wine
-def getWineWithParams (wine,bottle, missingIsFatal = true)
+def getWineWithParams (wine,bottle, missingIsFatal = true, playOnLinux = false)
 	final = []
 	possibleWines = [ 'wine32','wine','wine64','wine.bin','wine.real','wine-unstable','wine32-unstable' ]
 	# Manual search path, in the odd case none of the above are in $PATH.
@@ -1002,20 +1002,36 @@ def getWineWithParams (wine,bottle, missingIsFatal = true)
 	end
 	final.push(wine)
 
+	# wwine's bottle storage
+	wwine_bottleRoot = ENV['HOME']+'/.wwinebottles/'
+	# PlayOnLinux's bottle storage
+	playOnLinux_bottleRoot = ENV['HOME']+'/.PlayOnLinux/wineprefix/'
+	# wwine is the default
+	bottleRoot = wwine_bottleRoot
+	# If a POL bottle exists and we are using a POL wine, then use the
+	# POL bottle, otherwise use the wwine bottle
+	if playOnLinux && bottle != nil
+		if File.exists?(playOnLinux_bottleRoot+bottle)
+			bottleRoot = playOnLinux_bottleRoot
+			vputs(V_INFO,'Using the PlayOnLinux bottle path since a POL bottle named "'+bottle+'" exists')
+		else
+			vputs(V_DBG,'Using the wwine bottle location for POL since no POL bottle named "'+bottle+'" exists')
+		end
+	end
+
 	# Set WINEPREFIX for bottle support
 	if(bottle != nil && bottle.length > 0)
 		if ENV.has_key?('WINEPREFIX') && ENV['WINEPREFIX'].length > 0
 			warn 'WINEPREFIX= was already set, overriding it.'
 		end
 		if ! (bottle =~ /^\.?\//)
-			bottle = ENV['HOME']+'/.wwinebottles/'+bottle
-			if !File.exists?(ENV['HOME']+'/.wwinebottles/')
-				vputs(V_INFO,ENV['HOME']+'/.wwinebottles/: does not exist, creating')
-				vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
+			bottle = bottleRoot+bottle
+			if !File.exists?(bottleRoot)
+				vputs(V_INFO,bottleRoot+': does not exist, creating')
 				begin
-					Dir.mkdir(ENV['HOME']+'/.wwinebottles/')
+					Dir.mkdir(bottleRoot)
 				rescue SystemCallError
-					puts('Failed to create directory "'+ENV['HOME']+'/.wwinebottles/'+": "+$!)
+					puts('Failed to create directory "'+bottleRoot+": "+$!)
 					puts('Unable to continue.')
 					exit(1)
 				end
@@ -1205,7 +1221,7 @@ def getPOLwithParams(wine,bottle, missingIsFatal = true, returnDetected = false)
 	envPut('WINELOADER',detectedWine)
 	envPut('WINEDLLPATH',detectedWineDir+'/lib/wine:'+ENV['WINEDLLPATH'].to_s)
 	envPut('LD_LIBRARY_PATH',detectedWineDir+'/lib:'+ENV['LD_LIBRARY_PATH'].to_s)
-	getWineWithParams(detectedWine,bottle,missingIsFatal)
+	getWineWithParams(detectedWine,bottle,missingIsFatal,true)
 end
 
 # Purpose: Detect which wine to use and get parameters for that one

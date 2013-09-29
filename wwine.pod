@@ -66,6 +66,10 @@ case vanilla wine will use ~/.wine, crossover/cxoffice/cxgames will use the
 bottle defined as default and for cedega a bottle named 'wwineFolder' will be
 used.
 
+PlayOnLinux wines are a special case. If a bottle with the name supplied exists
+in ~/.PlayOnLinux/wineprefixes/ then wwine will use that bottle (ie. the existing
+PlayOnLinux bottle), otherwise it will use a bottle in ~/.wwinebottles.
+
 =item B<-l, --list>
 
 List all available wine versions. This will list the names that can be supplied
