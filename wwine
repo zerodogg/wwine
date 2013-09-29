@@ -341,13 +341,19 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	if wineprefix != nil
 		wineprefix.sub!(/'/,'\\')
 		file.puts("\t"+'export WINEPREFIX='+shellQuote(wineprefix))
-		file.puts("\t"+"export WINEDEBUG='-all'");
 	end
 	if wwineInfo['Wine'] =~ /^pol/i
 		path = getPOLwithParams(wwineInfo['Wine'].sub(/^pol[-:]?/i,''),nil,false,true)
+		if ENV['WINEDEBUG'] != nil
+			file.puts("\t"+"export WINEDEBUG="+shellQuote(ENV['WINEDEBUG']))
+		end
 		file.puts("\t"+'export WINESERVER='+shellQuote(path+'/bin/wineserver'))
 		file.puts("\t"+'export WINELOADER='+shellQuote(path+'/bin/wine'))
 		file.puts("\t"+'export WINEDLLPATH='+shellQuote(path+'/lib/wine'))
+	elsif wwineInfo['Wine'] == 'wine' || wineprefix
+		if ENV['WINEDEBUG'] != nil
+			file.puts("\t"+"export WINEDEBUG="+shellQuote(ENV['WINEDEBUG']))
+		end
 	end
 	file.puts("\t"+"exec "+shellQuote(otherCommand).join(" ")+' "$@"')
 	file.puts('fi')
