@@ -893,11 +893,16 @@ def listWines(debug = false)
 		if defaultWine == nil
 			defaultWine = '(no wine found)'
 		end
-		printf(outFormat,'(default wine)',defaultWine)
+		if defaultWine != 'wine'
+			printf(outFormat,'(default wine)',defaultWine)
+		end
 
 		if inPath('wine')
 			wineVer = getWineVersion()
 			printf(outFormat,'wine',wineVer)
+			if defaultWine == 'wine'
+				puts "   (default when no --wine is specified)"
+			end
 		end
 
 		if $wine != nil and File.executable?($wine) and not File.directory?($wine)
@@ -913,15 +918,22 @@ def listWines(debug = false)
 
 		if (cxgBin || !cxoBin)
 			printf(outFormat,'cxgames',cxgVer)
+			puts "   (aliases for cxgames: cxg, cxgames)"
 		end
 
 		if cxoVer
-			printf(outFormat,'crossover (cx)',cxoVer)
+			printf(outFormat,'crossover',cxoVer)
+			if !cxgBin
+				puts "   (aliases for crossover: cx, cxo, cxg, cxoffice, cxgames)"
+			else
+				puts "   (aliases for crossover: cx, cxo, cxoffice)"
+			end
 		end
 
 		cedegaVer = getGameTreeVersionString()
 		if cedegaVer
 			printf(outFormat,'gametree',cedegaVer)
+			puts "   (aliases for gametree: cedega)"
 		end
 
 		Dir.glob(ENV['HOME']+'/.PlayOnLinux/wine/linux-*/*') do |dir|
