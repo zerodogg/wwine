@@ -808,8 +808,6 @@ def getGameTreeVersionString ()
 		if cedegaVer == nil
 			cedegaVer = 'present'
 		end
-	else
-		cedegaVer = '(not present)'
 	end
 
 	return cedegaVer
@@ -852,7 +850,7 @@ def getCXVersionsFrom (source,wantString = false)
 				return cxVer
 			end
 		else
-			return '(not present)'
+			return nil
 		end
 	else
 		return cxVer,cxwVer
@@ -906,7 +904,7 @@ def listWines(debug = false)
 		if inPath('wine')
 			wineVer = getWineVersion()
 			printf(outFormat,'wine',wineVer)
-			if defaultWine == 'wine'
+			if defaultWine == 'wine' && !debug
 				puts "   (default when no --wine is specified)"
 			end
 		end
@@ -922,24 +920,30 @@ def listWines(debug = false)
 		cxoBin = getCXwithParams('cxoffice',nil,false)
 		cxoVer = getCXVersionsFrom(cxoBin,true)
 
-		if (cxgBin || !cxoBin)
-			printf(outFormat,'cxgames',cxgVer)
-			puts "   (aliases for cxgames: cxg, cxgames)"
+		if (cxgBin || !cxoBin || debug)
+			printf(outFormat,'cxgames',cxgVer || '(not present)')
+			if !debug
+				puts "   (aliases for cxgames: cxg, cxgames)"
+			end
 		end
 
-		if cxoVer
+		if cxoVer || debug
 			printf(outFormat,'crossover',cxoVer)
-			if !cxgBin
-				puts "   (aliases for crossover: cx, cxo, cxg, cxoffice, cxgames)"
-			else
-				puts "   (aliases for crossover: cx, cxo, cxoffice)"
+			if !debug
+				if !cxgBin
+					puts "   (aliases for crossover: cx, cxo, cxg, cxoffice, cxgames)"
+				else
+					puts "   (aliases for crossover: cx, cxo, cxoffice)"
+				end
 			end
 		end
 
 		cedegaVer = getGameTreeVersionString()
-		if cedegaVer
-			printf(outFormat,'gametree',cedegaVer)
-			puts "   (aliases for gametree: cedega)"
+		if cedegaVer || debug
+			printf(outFormat,'gametree',cedegaVer || '(not present)')
+			if ! debug
+				puts "   (aliases for gametree: cedega)"
+			end
 		end
 
 		Dir.glob(ENV['HOME']+'/.PlayOnLinux/wine/linux-*/*') do |dir|
