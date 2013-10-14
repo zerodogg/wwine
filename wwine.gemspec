@@ -2,10 +2,10 @@
 
 Gem::Specification.new do |s|
   s.name = %q{wwine}
-  s.version = "0.2.2"
+  s.version = "0.3"
 
   s.authors = ["Eskild Hustvedt"]
-  s.date = %q{2012-07-21}
+  s.date = %q{2013-10-14}
   s.email = %q{code at zerodogg dot org}
   s.files = [ 'wwine', 'README', 'COPYING', 'wwine.1' ]
   s.bindir = '.'
