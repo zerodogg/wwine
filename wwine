@@ -84,8 +84,6 @@ def killWine (signal)
 	end
 	if !dryRun
 		print 'Sending '+sigName+' to the following processes:'+"\n\n"
-	else
-		print 'Would send '+sigName+' to the following processes:'+"\n\n"
 	end
 	format = "%-10s %-12s %-8s %-20s\n"
 	printf(format,'Wine','Bottle','PID','Command')
@@ -1388,7 +1386,7 @@ else
 		[ '--wine', '-w', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
-		[ '--drykill', GetoptLong::NO_ARGUMENT ],
+		[ '--running','--drykill', GetoptLong::NO_ARGUMENT ],
 		[ '--debug',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--cxg-installdir','--cxgamesinstalldir','-C',GetoptLong::REQUIRED_ARGUMENT ],
@@ -1432,7 +1430,7 @@ begin
 			$bottle = arg
 		when '--verbose'
 			$verbosity = $verbosity+1
-		when '--drykill'
+		when '--running'
 			$killMode = 9999
 		when '--debuginfo'
 			debugInfo()
