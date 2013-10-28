@@ -1,6 +1,8 @@
 Version 0.4
 - Added --debug which will turn on debugging messages (regardless of flavour).
     The syntax is that of the WINEDEBUG environment variable.
+- Removed compatibility for wwine metadata format v1 (support for upgrading
+    v1 files to a newer version is still present)
 
 Version 0.3
 - Output from --kill and --drykill now lists bottle and wine flavour

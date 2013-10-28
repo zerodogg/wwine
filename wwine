@@ -314,9 +314,6 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	wwineInfo.each do |key,value|
 		file.puts('# wwine'+key+': '+value)
 	end
-	# wwineCmd isn't used in v2 or v3, but v1 outputs an invalid message if it
-	# doesn't exist. wwineCmd (unnumbered) will be dropped in a later version.
-	file.puts('# wwineCmd: nil')
 
 	subN = 0
 	args.each do |sub|
@@ -539,16 +536,20 @@ def loadWwineDataFromFile (file,dryRun = false)
 		if info['Info'] == 'v2' || info['Info'] == 'v3'
 			info = parseWwineDataV2(info);
 		elsif info['Info'].match(/^v1/)
-			info = parseWwineDataV1(info)
 			if ! $wrapperPath
-				puts "-- Note: --"
-				puts "This file is using the wwine metadata format v1."
-				puts "This format has been deprecated and support for it will be dropped in"
-				puts "a later version of wwine. You may upgrade it with this command:"
-				puts "wwine --from "+shellQuote(file)+" --wrap "+shellQuote(file+'.new')+" && mv "+shellQuote(file)+" "+shellQuote(file+'.old')+' && mv '+shellQuote(file+'.new')+' '+shellQuote(file)
-				puts "--       --"
+				puts "ERROR: Unsupported wwine metadata format (v1)"
 				puts ""
+				puts "This format is no longer supported directly, and even upgrade support will"
+				puts "be removed in a later version of wwine. To upgrade the file to the new"
+				puts "wwine format, run this command:"
+				puts " wwine --from "+shellQuote(file)+" --wrap "+shellQuote(file+'.new')+" && mv "+shellQuote(file)+" "+shellQuote(file+'.old')+' && mv '+shellQuote(file+'.new')+' '+shellQuote(file)
+				puts ""
+				puts "This will upgrade the file, while leaving an old backup copy in place with a"
+				puts ".old-extension. You may delete the .old file if you have never edited the"
+				puts "script directly, or after you have copied over your changes."
+				exit(1)
 			end
+			info = parseWwineDataV1(info)
 		else
 			version = info['Info'].sub(/^(v\S+).+/,'\1').chomp
 			puts "This version of wwine supports info format v1, v2 and v3."
