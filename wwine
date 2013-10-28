@@ -368,10 +368,9 @@ end
 def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	wwineCmd = []
 	wwineInfo = {
-		'Cxinstalldir' => 'nil',
 		'Dir' => 'nil',
 		'Bottle' => 'nil',
-		'Wine' => 'nil'
+		'Wine' => 'nil',
 	}
 
 	# Generate a wwine command-line
