@@ -20,7 +20,7 @@ require 'getoptlong'
 # To read info for --debuginfo
 require 'open3'
 # Application version
-$version = '0.3'
+$version = '0.4'
 # The wine flavour to use
 $wine = nil
 # The bottle to use
@@ -42,6 +42,8 @@ $tricksMode = false
 # A positive integer if we're in --kill or --drykill mode
 # (--drykill = 9999)
 $killMode = nil
+# Wine debugging levels
+$wineDebug = nil
 # Verbosity level
 $verbosity = 0
 V_INFO=1
@@ -292,8 +294,9 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 		exit(1)
 	end
 
-	# If CxGamesinstalldir is present, use format v3, otherwise
-	# v2 is fine.
+	# If CxGamesinstalldir is present, use format v3, otherwise v2 is fine. The
+	# 'Debug' option is not present in wwine 0.3 and older, but it is not
+	# essential and thus does not get its own metaFormat bump.
 	metaFormat = 'v2'
 	if wwineInfo['CxGamesinstalldir']
 		metaFormat = 'v3'
@@ -387,6 +390,10 @@ def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	if $cxgPath
 		wwineCmd.push('--cxg-installdir',$cxgPath)
 		wwineInfo['CxGamesinstalldir'] = $cxgPath
+	end
+	if $wineDebug
+		wwineCmd.push('--debug',$wineDebug)
+		wwineInfo['Debug'] = $wineDebug
 	end
 	if wine
 		wwineCmd.push('--wine',wine)
@@ -692,6 +699,7 @@ def Help ()
 	printHelp('-h','--help','Display this help text')
 	printHelp('-w','--wine','Select the wine to use. Any wine listed in "wwine --list" or the path to a wine binary.')
 	printHelp('-b','--bottle','Use the selected bottle (~/.wwinebottles/[NAME] for wine, CX bottle or cedega folder, depending on the --wine in use). The bottle will be created if it does not exist.')
+	printHelp('','--debug','Enable wine debugging output with the supplied levels (using the format of the WINEDEBUG environment variable)')
 	printHelp('','--env','Set the WINE and WINEPREFIX environment variables to match the parameters provided to wwine and optionally run a program with those variables set.')
 	printHelp('-l','--list','List all available wine versions')
 	printHelp('-k','--kill','Attempt to kill all running wine processes')
@@ -1050,8 +1058,11 @@ def getWineWithParams (wine,bottle, missingIsFatal = true, playOnLinux = false)
 		envPut('WINEPREFIX',bottle)
 	end
 
-	# Default to no debugging output if WINEDEBUG is not set yet
-	if ! ENV.has_key?('WINEDEBUG')
+	# Enable debugging if requested
+	if $wineDebug
+		envPut('WINEDEBUG',$wineDebug)
+		# Default to no debugging output if WINEDEBUG is not set yet
+	elsif ! ENV.has_key?('WINEDEBUG')
 		envPut('WINEDEBUG','-all')
 	end
 
@@ -1149,6 +1160,9 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, g
 	if(bottle != nil && bottle.length > 0)
 		final.push('--bottle',bottle)
 	end
+	if $wineDebug
+		final.push('--debugmsg',$wineDebug)
+	end
 	final.push('--');
 
 	# Create the bottle if it does not exist
@@ -1189,6 +1203,10 @@ def getGameTreeWithParams (wine,bottle, missingIsFatal = true)
 	end
 
 	final.push(gametreeBin,'--install')
+
+	if $wineDebug
+		finalpush('--debugmsg',$wineDebug)
+	end
 
 	# Use wwineFolder as the folder if no bottle was supplied
 	if (bottle == nil || bottle.length == 0)
@@ -1370,6 +1388,7 @@ else
 		[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
 		[ '--drykill', GetoptLong::NO_ARGUMENT ],
+		[ '--debug',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--cxg-installdir','--cxgamesinstalldir','-C',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--version',GetoptLong::NO_ARGUMENT ],
@@ -1416,6 +1435,8 @@ begin
 			$killMode = 9999
 		when '--debuginfo'
 			debugInfo()
+		when '--debug'
+			$wineDebug = arg
 		when '--list-wines'
 			listWines()
 			exit(0)

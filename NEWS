@@ -1,3 +1,7 @@
+Version 0.4
+- Added --debug which will turn on debugging messages (regardless of flavour).
+    The syntax is that of the WINEDEBUG environment variable.
+
 Version 0.3
 - Output from --kill and --drykill now lists bottle and wine flavour
   under Linux
