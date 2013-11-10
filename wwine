@@ -505,6 +505,7 @@ def loadWwineDataFromFile (file,dryRun = false)
 			exit(0)
 		end
 		if info['Info'] == 'v2' || info['Info'] == 'v3' || info['Info'] == 'v4'
+			vputs(V_DBG,'File contains wwine metadata '+info['Info'])
 			info = parseWwineDataV2(info);
 		elsif info['Info'].match(/^v1/)
 			if ! $wrapperPath
@@ -560,9 +561,11 @@ def loadWwineDataFromFile (file,dryRun = false)
 			$wine = info['Wine']
 			# Support for legacy Cx*installdir
 			if info['Cxinstalldir'] != 'nil' && info['Cxinstalldir'] != nil
+				vputs(V_DBG,'Converting Cxinstalldir entry to a Wine entry')
 				$wine = info['Cxinstalldir']
 			end
 			if info['CxGamesinstalldir'] != 'nil' && info['CxGamesinstalldir'] != nil
+				vputs(V_DBG,'Converting CxGamesinstalldir entry to a Wine entry')
 				$wine = info['CxGamesinstalldir']
 			end
 			printf(outFormat,outMessage+'--wine',$wine)
@@ -1114,7 +1117,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, g
 	# If the dir does not exist, give up
 	if not cxdir
 		if !missingIsFatal
-			vputs(V_DBG,'Failed to detect cxdir')
+			vputs(V_DBG,'Failed to detect cxdir for '+mode)
 			return nil
 		end
 		if pathMode != nil
