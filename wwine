@@ -931,6 +931,19 @@ def listWines(debug = false)
 			name = dir.sub(/^.*\/([^\/]+)/,'\1')
 			printf(outFormat,'pol-'+name,getWineVersion(dir+'/bin/wine'))
 		end
+
+		if $wine != nil && debug
+			version = nil
+			if File.directory?($wine)
+				cxBin = getCXwithParams($wine,nil,false)
+				version = getCXVersionsFrom(cxBin,true)
+			elsif File.executable?($wine)
+				version = getWineVersion($wine)
+			end
+			if version != nil
+				printf(outFormat,$wine,version)
+			end
+		end
 	rescue => ex
 		handleException(ex)
 	end
