@@ -45,17 +45,21 @@ Display the help screen
 Use the supplied flavour of wine. The default is to use vanilla wine.
 
 Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
-crossover), cxg (alias for cxgames), cxo (alias for cxoffice) or
-/path/to/a/wine.binary. Note that if you have crossover, but not cxgames
-installed, wwine will alias cxgames to crossover, to provide a simple upgrade
-path where wrapper scripts 'just work'.
+crossover), cxg (alias for cxgames), cxo (alias for cxoffice),
+/path/to/a/wine.binary or /path/to/a/crossover-installation. Note that if you
+have crossover, but not cxgames installed, wwine will alias cxgames to
+crossover, to provide a simple upgrade path where wrapper scripts 'just work'.
 
 If this parameter is not supplied, wwine will attempt to autodetect which wine
 to use, checking for the existance of flavours in the following order, using
 the first one found: wine, crossover, cxoffice, cxgames, cedega. To see the
 default flavour wwine will use, run I<wwine --debuginfo>.
 
-See also I<--cxinstalldir>.
+If you supply a path to a crossover installation (or a cxgames installation),
+wwine will act as if --wine is "crossover" (or cxgames), but use the Crossover
+installation at that path instead of its autodetected one. If you supply the
+path to a wine binary then it will use that as the "wine" command instead of
+the one in your PATH.
 
 =item B<-b, --bottle> I<NAME>
 
@@ -127,16 +131,6 @@ I<--tricks corefonts>
 I<--tricks -- --help>
 
 =back
-
-=item B<-c, --cxinstalldir> I<PATH>
-
-Use the supplied path as the path to a crossover install directory, or as a
-directory that contains a crossover directory.
-
-=item B<-C, --cxg-installdir> I<PATH>
-
-Use the supplied path as the path to a cxgames install directory, or as a
-directory that contains a cxgames directory.
 
 =item B<--wrap> I<PATH>
 
@@ -212,14 +206,14 @@ Runs file.exe in wine, using the 'file' bottle.
 
 Runs file.exe in crossover games using the cxgames 'file' bottle
 
-=item I<wwine --cxinstalldir ~/cxgames7.0/ -w cxg -b file file.exe>
+=item I<wwine --wine ~/cxgames7.0/ -b file file.exe>
 
 Runs file.exe in the version of crossover games that is installed at
 I<~/cxgames7.0>, using the cxgames 'file' bottle.
 
---cxinstalldir can be useful to run something in a version of cxgames/cxoffice
-other than your primary one. Ie. if a regression causes it to not run in a
-later version.
+Providing a path to a Crossover installation to --wine can be useful to run
+something in a version of cxgames/cxoffice other than your primary one. Ie. if
+a regression causes it to not run in a later version.
 
 =item I<wwine -w cxg -b file file.exe --wrap ~/bin/startFile>
 

@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2011-12-03" "wwine 0.2" ""
+.TH WWINE 1 "2013-11-10" "wwine 0.4" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -8,11 +8,11 @@
 wwine \- a simple wine(1) wrapper
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-wwine \fI(\s-1WWINE\s0 \s-1PARAMETERS\s0)\fR \fI\s-1PROGRAM\s0\fR \*(-- \fI[\s-1PROGRAM\s0 \s-1ARGUMENTS\s0]\fR
+wwine \fI(\s-1WWINE PARAMETERS\s0)\fR \fI\s-1PROGRAM\s0\fR \*(-- \fI[\s-1PROGRAM ARGUMENTS\s0]\fR
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 \&\fBwwine\fR is a a \fIwine\fR\|(1) wrapper. It wraps various flavours of wine
-(including vanilla wine and crossover office/games) into a single
+(including vanilla wine and crossover) into a single
 unified interface, complete with full bottle support for all
 of them (including vanilla wine).
 .PP
@@ -35,28 +35,48 @@ Display the help screen
 .IX Item "-w, --wine FLAVOUR"
 Use the supplied flavour of wine. The default is to use vanilla wine.
 
-Possible parameters: wine, cxgames, cxoffice, cedega, cxg (alias for cxgames),
-cxo (alias for cxoffice) or /path/to/a/wine.binary
+Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
+crossover), cxg (alias for cxgames), cxo (alias for cxoffice),
+/path/to/a/wine.binary or /path/to/a/crossover\-installation. Note that if you
+have crossover, but not cxgames installed, wwine will alias cxgames to
+crossover, to provide a simple upgrade path where wrapper scripts 'just work'.
 
-If this parameter is not supplied, wwine will attempt to autodetect which
-wine to use, checking for the existance of flavours in the following order,
-using the first one found: wine, cxgames, cxoffice, cedega. To see the
+If this parameter is not supplied, wwine will attempt to autodetect which wine
+to use, checking for the existance of flavours in the following order, using
+the first one found: wine, crossover, cxoffice, cxgames, cedega. To see the
 default flavour wwine will use, run \fIwwine \-\-debuginfo\fR.
 
-See also \fI\-\-cxinstalldir\fR.
+If you supply a path to a crossover installation (or a cxgames installation),
+wwine will act as if \-\-wine is \*(L"crossover\*(R" (or cxgames), but use the Crossover
+installation at that path instead of its autodetected one. If you supply the
+path to a wine binary then it will use that as the \*(L"wine\*(R" command instead of
+the one in your \s-1PATH.\s0
 .IP "\fB\-b, \-\-bottle\fR \fI\s-1NAME\s0\fR" 4
 .IX Item "-b, --bottle NAME"
-Use the bottle with the name supplied. For cxgames, cxoffice or cedega
-it uses the flavours builtin bottle support. For vanilla wine it sets
-\&\s-1WINEPREFIX\s0 to use ~/.wwinebottles/<\s-1NAME\s0>. It defaults to no bottle,
-in which case vanilla wine will use ~/.wine, cxoffice/cxgames will
-use the bottle defined as default and for cedega a bottle named 'wwineFolder'
-will be used.
+Use the bottle with the name supplied. For crossover, cxgames, cxoffice or
+cedega it uses the flavours builtin bottle support. For vanilla wine it sets
+\&\s-1WINEPREFIX\s0 to use ~/.wwinebottles/<\s-1NAME\s0>. It defaults to no bottle, in which
+case vanilla wine will use ~/.wine, crossover/cxoffice/cxgames will use the
+bottle defined as default and for cedega a bottle named 'wwineFolder' will be
+used.
+
+PlayOnLinux wines are a special case. If a bottle with the name supplied exists
+in ~/.PlayOnLinux/wineprefixes/ then wwine will use that bottle (ie. the existing
+PlayOnLinux bottle), otherwise it will use a bottle in ~/.wwinebottles.
+.IP "\fB\-l, \-\-list\fR" 4
+.IX Item "-l, --list"
+List all available wine versions. This will list the names that can be supplied
+to \fI\-\-wine\fR as well as the actual wine version in question.
 .IP "\fB\-k, \-\-kill\fR" 4
 .IX Item "-k, --kill"
-Attempt to kill all running wine processes. See also \fI\-\-drykill\fR
+Attempt to kill running wine processes. See also \fI\-\-drykill\fR.
 
-The default signal is \s-1SIGTERM\s0, however you can supply any signal number
+By default it will kill all running wine processes. If you are on Linux then
+you can combine this option with the \fI\-\-bottle\fR and/or \fI\-\-wine\fR (or even
+\&\fI\-\-from\fR) options to limit it to killing only processes in a specific bottle
+and/or running under a specific wine.
+
+The default signal is \s-1SIGTERM,\s0 however you can supply any signal number
 you want (ie. \*(L"wwine \-k9\*(R").
 .IP "\fB\-\-drykill\fR" 4
 .IX Item "--drykill"
@@ -67,7 +87,7 @@ Print what \fI\-\-kill\fR would have done, without actually doing anything.
 variables, and (optionally) run a native program with those variables
 set. This lets you run any program that uses the \s-1WINE\s0 and \s-1WINEPREFIX\s0
 variables with wwine instead of wine (effectively giving you bottle
-support, as well as support for using cxgames/cxoffice/.. instead
+support, as well as support for using crossover/cxgames/cxoffice/.. instead
 of wine).
 
 When you use \-\-env, wwine will obey \-\-bottle and \-\-wine (or \-\-from) and set
@@ -77,14 +97,23 @@ have been set.
 
 See the \s-1EXAMPLES\s0 section for an example of how to use winetricks
 with cxgames using wwine's \fB\-\-env\fR
-.IP "\fB\-\-env\-bottle\fR" 4
-.IX Item "--env-bottle"
-This option is primarily for internal use. It causes wwine to parse which
-\&\-\-bottle to use from the \s-1WINEPREFIX\s0 variable.
-.IP "\fB\-c, \-\-cxinstalldir\fR \fI\s-1PATH\s0\fR" 4
-.IX Item "-c, --cxinstalldir PATH"
-Use the supplied path as the path to either a crossover office/games install
-directory, or as a directory that contains a cxoffice and/or cxgames directory.
+.IP "\fB\-\-tricks\fR" 4
+.IX Item "--tricks"
+Run winetricks with the wine/bottle combination supplied. This is \fIalmost\fR
+equivalent to \fI\-\-env winetricks \*(-- \-\-no\-isolate\fR (the \fI\-\-\fR would be required
+if you used \-\-env, and would stop processing the rest of the \fIwwine\fR command-line,
+\&\-\-tricks does not add the \-\-, so it can be supplied anywhere on the command-line)
+\&\fI\-\-tricks\fR can be used to quickly call winetricks in a bottle. Examples:
+.RS 4
+.IP "Install package (ie. corefonts)" 4
+.IX Item "Install package (ie. corefonts)"
+\&\fI\-\-tricks corefonts\fR
+.IP "Get winetricks help" 4
+.IX Item "Get winetricks help"
+\&\fI\-\-tricks \*(-- \-\-help\fR
+.RE
+.RS 4
+.RE
 .IP "\fB\-\-wrap\fR \fI\s-1PATH\s0\fR" 4
 .IX Item "--wrap PATH"
 Generate a wrapper script of the current command-line and write it to
@@ -123,7 +152,8 @@ applied.
 .IP "\fB\-v, \-\-verbose\fR" 4
 .IX Item "-v, --verbose"
 Increase verbosity. When this is present wwine will tell you the exact
-commands it is running.
+commands it is running. Supply multiple times to increase verbosity (ie.
+to enable wwine debugging output).
 .IP "\fB\-\-man\fR" 4
 .IX Item "--man"
 Show the manpage. Normally 'man wwine' would do, but when wwine is
@@ -145,14 +175,14 @@ Runs file.exe in wine, using the 'file' bottle.
 .IP "\fIwwine \-w cxg \-b file file.exe\fR" 4
 .IX Item "wwine -w cxg -b file file.exe"
 Runs file.exe in crossover games using the cxgames 'file' bottle
-.IP "\fIwwine \-\-cxinstalldir ~/cxgames7.0/ \-w cxg \-b file file.exe\fR" 4
-.IX Item "wwine --cxinstalldir ~/cxgames7.0/ -w cxg -b file file.exe"
+.IP "\fIwwine \-\-wine ~/cxgames7.0/ \-b file file.exe\fR" 4
+.IX Item "wwine --wine ~/cxgames7.0/ -b file file.exe"
 Runs file.exe in the version of crossover games that is installed at
 \&\fI~/cxgames7.0\fR, using the cxgames 'file' bottle.
 
-\&\-\-cxinstalldir can be useful to run something in a version of cxgames/cxoffice
-other than your primary one. Ie. if a regression causes it to not run in a
-later version.
+Providing a path to a Crossover installation to \-\-wine can be useful to run
+something in a version of cxgames/cxoffice other than your primary one. Ie. if
+a regression causes it to not run in a later version.
 .IP "\fIwwine \-w cxg \-b file file.exe \-\-wrap ~/bin/startFile\fR" 4
 .IX Item "wwine -w cxg -b file file.exe --wrap ~/bin/startFile"
 This causes wwine to create a wrapper shell script at ~/bin/startFile.
@@ -171,12 +201,15 @@ using the parameters specified in ~/bin/startFile, with the exception of
 \&\-\-wine, which would be wine instead of cxgames (here assuming this
 is the file created by the above example).
 .IP "\fIwwine \-w cxg \-b file \-\-env \*(-- winetricks \-\-no\-isolate vcrun6\fR" 4
-.IX Item "wwine -w cxg -b file --env  winetricks --no-isolate vcrun6"
-This causes wwine to set the environment variables \s-1WINE\s0 and \s-1WINEPREFIX\s0,
+.IX Item "wwine -w cxg -b file --env winetricks --no-isolate vcrun6"
+This causes wwine to set the environment variables \s-1WINE\s0 and \s-1WINEPREFIX,\s0
 and then execute the command supplied. In this case it would run
 winetricks, which would be told to install \*(L"vcrun6\*(R". Because it is running
 under wwine's \-\-env parameter, winetricks will use wwine to perform
 the actions, thus allowing you to use winetricks with cxgames.
+.IP "\fIwwine \-w cxg \-b file \-\-tricks vcrun6\fR" 4
+.IX Item "wwine -w cxg -b file --tricks vcrun6"
+This is the same as the above, but using wwine's builtin support for winetricks.
 .IP "\fIwwine \-k\fR" 4
 .IX Item "wwine -k"
 Will make wwine attempt to kill all running wine processes on this system by
@@ -185,9 +218,28 @@ sending them the \s-1TERM\s0 signal.
 .IX Item "wwine -k9"
 Will make wwine attempt to kill all running wine processes on this system by
 sending them the \s-1KILL\s0 signal. Should only be used if \*(L"wwine \-k\*(R" fails.
+.IP "\fIwwine \-\-bottle test \-\-wine cx \-\-kill\fR" 4
+.IX Item "wwine --bottle test --wine cx --kill"
+Kill any crossover processes running in the bottle \*(L"test\*(R".
+.SH "SUPPORTED WINE FLAVOURS"
+.IX Header "SUPPORTED WINE FLAVOURS"
+The following flavours of wine are supported:
+.IP "\fBWine\fR" 4
+.IX Item "Wine"
+Regular wine. <http://www.winehq.org/>
+.IP "\fBCrossover\fR and \fBCrossover Office/Games\fR" 4
+.IX Item "Crossover and Crossover Office/Games"
+The commercial Crossover release from Codeweavers, as well as the legacy
+versions \*(L"Crossover Office\*(R" and \*(L"Crossover Games\*(R". <http://www.codeweavers.com/>
+.IP "\fBPlayOnLinux\fR" 4
+.IX Item "PlayOnLinux"
+Wine packages installed via PlayOnLinux. <http://www.playonlinux.com/>
+.IP "\fBGameTree Linux/Cedega\fR" 4
+.IX Item "GameTree Linux/Cedega"
+The unmaintained Cedega flavour of wine.
 .SH "DEPENDENCIES"
 .IX Header "DEPENDENCIES"
-Requires at least one of wine, cxoffice, cxgames or cedega.
+Requires at least one of wine, crossover, cxoffice, cxgames or cedega.
 .SH "ENVIRONMENT VARIABLES"
 .IX Header "ENVIRONMENT VARIABLES"
 .IP "\fB\s-1WWINE_VERBOSE\s0\fR" 4
@@ -202,7 +254,7 @@ If this is not set, wwine will set it to \-all when using \-w wine.
 .IX Item "WINEPREFIX"
 wwine uses the \s-1WINEPREFIX\s0 environment variable to add bottle support when
 in \-w wine mode. If \s-1WINEPREFIX\s0 is set and a \-\-bottle is supplied, wwine will override
-the existing \s-1WINEPREFIX\s0. If no bottle is supplied, wwine will respect \s-1WINEPREFIX\s0.
+the existing \s-1WINEPREFIX.\s0 If no bottle is supplied, wwine will respect \s-1WINEPREFIX.\s0
 .PP
 Any environment variables that wwine sets while it is running will be output
 by wwine when in \-\-verbose mode.
@@ -221,4 +273,4 @@ submit feature requests there as well.
 Copyright (C) Eskild Hustvedt 2009, 2010, 2011
 .PP
 This is free software; see the source for copying conditions.  There is \s-1NO\s0
-warranty; not even for \s-1MERCHANTABILITY\s0 or \s-1FITNESS\s0 \s-1FOR\s0 A \s-1PARTICULAR\s0 \s-1PURPOSE\s0.
+warranty; not even for \s-1MERCHANTABILITY\s0 or \s-1FITNESS FOR A PARTICULAR PURPOSE.\s0
