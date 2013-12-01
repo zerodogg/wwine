@@ -1505,8 +1505,8 @@ end
 if $killMode != nil
 	begin
 		killWine($killMode)
-	rescue
-		puts "Error while attempting to kill processes: "+$!
+	rescue => ex
+		handleException(ex)
 	end
 	exit(0)
 end
