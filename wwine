@@ -172,14 +172,14 @@ def getFromEnviron(path)
 		env = Hash.new
 		source.each("\0") do |entry|
 			key = entry.sub(/^([^=]+)=.*$/,'\1').chomp
-			value = entry.sub(/^[^=]+=(.*)$/,'\1').chomp
+			value = entry.sub(/^[^=]+=(.*)$/,'\1').sub(/\0/,'').chomp
 			env[key] = value
 		end
 
 		if env['CX_BOTTLE']
 			info['bottle'] = env['CX_BOTTLE']
 		elsif env['WINEPREFIX']
-			info['bottle'] = env['WINEPREFIX'].sub(/^.*\/([^\/]+)$/,'\1').chomp
+			info['bottle'] = File.basename(env['WINEPREFIX'])
 		elsif env['__WWINE_INT_XBOTTLE']
 			info['bottle'] = env['__WWINE_INT_XBOTTLE']
 		else
@@ -193,9 +193,10 @@ def getFromEnviron(path)
 			info['wine'] = env['__WWINE_INT_XWINE']
 		elsif env['WINELOADER']
 			info['wine'] = 'wine'
+		elsif info['bottle'] == '.wine-pipelight'
+			info['wine'] = 'pipelight'
+			info['bottle'] = '(pipelight)'
 		end
-		info['wine'].sub!(/\0/,'')
-		info['bottle'].sub!(/\0/,'')
 	end
 	return info
 end
