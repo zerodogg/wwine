@@ -8,6 +8,7 @@ Version 0.4
 - Deprecated --cxinstalldir and --cxginstalldir. --wine can now be provided
     with the path to a CX installation directorly
 - Fixed use of --wine when combined with --wrap or --tricks
+- Added explicit support for 64bit wine (bumps the wwine metadata format to v5)
 
 Version 0.3
 - Output from --kill and --drykill now lists bottle and wine flavour

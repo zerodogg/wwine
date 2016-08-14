@@ -44,11 +44,12 @@ Display the help screen
 
 Use the supplied flavour of wine. The default is to use vanilla wine.
 
-Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
-crossover), cxg (alias for cxgames), cxo (alias for cxoffice),
-/path/to/a/wine.binary or /path/to/a/crossover-installation. Note that if you
-have crossover, but not cxgames installed, wwine will alias cxgames to
-crossover, to provide a simple upgrade path where wrapper scripts 'just work'.
+Possible parameters: wine, wine64, wine-unstable, wine-unstable64, crossover,
+cxgames, cxoffice, cedega, cx (alias for crossover), cxg (alias for cxgames),
+cxo (alias for cxoffice), /path/to/a/wine.binary or
+/path/to/a/crossover-installation. Note that if you have crossover, but not
+cxgames installed, wwine will alias cxgames to crossover, to provide a simple
+upgrade path where wrapper scripts 'just work'.
 
 If this parameter is not supplied, wwine will attempt to autodetect which wine
 to use, checking for the existance of flavours in the following order, using
@@ -73,6 +74,13 @@ used.
 PlayOnLinux wines are a special case. If a bottle with the name supplied exists
 in ~/.PlayOnLinux/wineprefixes/ then wwine will use that bottle (ie. the existing
 PlayOnLinux bottle), otherwise it will use a bottle in ~/.wwinebottles.
+
+=item B<--arch> I<ARCH>
+
+Set the wine architecture to use. Accepts win32 and win64. If I<--wine> ends
+with 64, then it defaults to win64, otherwise it defaults to win32. Usually you
+won't need to explicitly provied an I<--arch> since wwine will infer it from
+I<--wine>.
 
 =item B<-l, --list>
 
