@@ -425,7 +425,7 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	if wine == nil
 		type,cmd = getAutoWithParams(bottle)
 	end
-	envPut('_WWINE_INT_WINE',wine)
+	envPut('__WWINE_INT_WINE',wine)
 
 	if wine == 'cxoffice' || wine == 'cxgames' || wine == 'crossover'
 		cxdir = getCXwithParams(wine,bottle,true,false,true)
