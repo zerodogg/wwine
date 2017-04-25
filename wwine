@@ -464,6 +464,10 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	else
 		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
+	if $wineArch
+		envPut('WINEARCH',$wineArch)
+		envPut('__WWINE_INT_WINEARCH',$wineArch)
+	end
 
 	envPut('WINEPREFIX',bottlePath)
 	envPut('WINE',File.expand_path($0))
@@ -1410,6 +1414,9 @@ if ENV['__WWINE_INT_ENVMODE'] == $version
 		$verbosity = ENV['__WWINE_INT_VERBOSITY'].to_i
 	end
 	opts['--bottle'] = ENV['__WWINE_INT_BOTTLE']
+	if ENV['__WWINE_INT_WINEARCH']
+		opts['--arch'] = ENV['__WWINE_INT_WINEARCH']
+	end
 else
 	opts = GetoptLong.new(
 		[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
