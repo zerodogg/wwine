@@ -1119,11 +1119,11 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, g
 			installName = 'cxoffice'
 		end
 		mode = wine
-		bottleDir = '.'+installName
 
 		# Various crossover install paths
 		wines = ['/opt/'+installName, ENV['HOME']+'/'+installName, ENV['HOME']+'/.local/'+installName, ENV['HOME']+'/games/'+installName]
 	end
+	bottleDir = '.'+installName
 
 	wines.each do |path|
 		if File.exists?(path)
