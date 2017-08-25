@@ -1186,7 +1186,7 @@ def getCXwithParams (wine,bottle, missingIsFatal = true, getBottleDir = false, g
 	final.push('--');
 
 	# Create the bottle if it does not exist
-	if bottle != nil and ! File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
+	if bottle != nil && !File.exists?(ENV['HOME']+'/'+bottleDir+'/'+bottle)
 		vputs(V_DBG,ENV['HOME']+'/'+bottleDir+'/'+bottle+' did not exist')
 		puts 'The bottle '+bottle+' did not exist, creating...'
 		runcmd([ cxdir+'/bin/cxbottle', '--bottle',bottle,'--create','--template','winxp'],'system')
