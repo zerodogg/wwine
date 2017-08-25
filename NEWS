@@ -6,7 +6,7 @@ Version 0.4
 - Renamed --drykill to --running and cleaned up its output (--drykill is
     now an alias for --running)
 - Deprecated --cxinstalldir and --cxginstalldir. --wine can now be provided
-    with the path to a CX installation directorly
+    with the path to a CX installation directory
 - Fixed use of --wine when combined with --wrap or --tricks
 - Added explicit support for 64bit wine (bumps the wwine metadata format to v5)
 
