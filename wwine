@@ -341,8 +341,12 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 	if $wineArch
 		file.puts("\t"+'export WINEARCH='+shellQuote($wineArch))
 	end
-	if wwineInfo['Wine'] =~ /^pol/i
-		path = getPOLwithParams(wwineInfo['Wine'].sub(/^pol[-:]?/i,''),nil,false,true)
+	if wwineInfo['Wine'] =~ /^(pol|lutris)/i
+		type = 'POL'
+		if wwineInfo['Wine'] =~ /^lutris/
+			type = 'lutris'
+		end
+		path = getCustomwithParams(wwineInfo['Wine'].sub(/^(pol|lutris)[-:]?/i,''),nil,'POL',false,true)
 		if ENV['WINEDEBUG'] != nil
 			file.puts("\t"+"export WINEDEBUG="+shellQuote(ENV['WINEDEBUG']))
 		end
@@ -425,7 +429,7 @@ def generateWrapper (wine,bottle,targetFile,wineCommand,args,type = nil)
 
 	# For wine there is no --bottle definition in the wine command itself,
 	# so we need to export a wineprefix in the launch script
-	if (type == 'wine' || type =~ /^pol[-:]/) && ENV['WINEPREFIX']
+	if (type == 'wine' || type =~ /^(pol|lutris)[-:]/) && ENV['WINEPREFIX']
 		wineprefix = ENV['WINEPREFIX'].dup
 	end
 
@@ -457,7 +461,7 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		envPut('__WWINE_INT_VERBOSITY',$verbosity.to_s)
 	end
 
-	if type == 'wine' || wine == 'wine' || File.exists?(wine) || wine =~ /^pol[-:]?/i
+	if type == 'wine' || wine == 'wine' || (File.exists?(wine) && !File.directory?(wine)) || wine =~ /^(pol|lutris)[-:]?/i
 		bottlePath = ENV['WINEPREFIX']
 	elsif resolveWine(wine) == 'gametree'
 		bottlePath = ENV['HOME']+'/.cedega/'+bottle
@@ -964,6 +968,11 @@ def listWines(debug = false)
 			printf(outFormat,'pol-'+name,getWineVersion(dir+'/bin/wine'))
 		end
 
+		Dir.glob(ENV['HOME']+'/.local/share/lutris/runners/wine/*') do |dir|
+			name = dir.sub(/^.*\/([^\/]+)/,'\1')
+			printf(outFormat,'lutris-'+name,getWineVersion(dir+'/bin/wine'))
+		end
+
 		if $wine != nil && debug
 			version = nil
 			if File.directory?($wine)
@@ -1238,9 +1247,16 @@ def getGameTreeWithParams (wine,bottle, missingIsFatal = true)
 	return final
 end
 
-# Purpose: Get parameters for PlayOnLinux
-def getPOLwithParams(wine,bottle, missingIsFatal = true, returnDetected = false)
-	winePaths = [ ENV['HOME']+'/.PlayOnLinux/wine/linux-x86', ENV['HOME']+'/.PlayOnLinux/wine/linux-amd64' ]
+# Purpose: Get parameters for PlayOnLinux or Lutris
+def getCustomwithParams(wine,bottle, type = 'POL', missingIsFatal = true, returnDetected = false)
+	winePaths = []
+	polMode = true
+	if type =~ /^pol/i
+	 	winePaths = [ ENV['HOME']+'/.PlayOnLinux/wine/linux-x86', ENV['HOME']+'/.PlayOnLinux/wine/linux-amd64' ]
+	else
+		polMode = false
+		winePaths = [ ENV['HOME']+'/.local/share/lutris/runners/wine/' ]
+	end
 	detectedWine = nil
 	detectedWineDir = nil
 	winePaths.each do |path|
@@ -1269,7 +1285,7 @@ def getPOLwithParams(wine,bottle, missingIsFatal = true, returnDetected = false)
 	envPut('WINELOADER',detectedWine)
 	envPut('WINEDLLPATH',detectedWineDir+'/lib/wine:'+ENV['WINEDLLPATH'].to_s)
 	envPut('LD_LIBRARY_PATH',detectedWineDir+'/lib:'+ENV['LD_LIBRARY_PATH'].to_s)
-	getWineWithParams(detectedWine,bottle,missingIsFatal,true)
+	getWineWithParams(detectedWine,bottle,missingIsFatal,polMode)
 end
 
 # Purpose: Detect which wine to use and get parameters for that one
@@ -1340,9 +1356,9 @@ def runWine (wine,bottle,args)
 			cmd = getWineWithParams(wine,bottle)
 		elsif resolveWine(wine) == 'gametree'
 			cmd = getGameTreeWithParams(wine,bottle)
-		elsif wine =~ /^pol[-:]?/i
-			realWine = wine.sub(/^pol[-:]?/i,'')
-			cmd = getPOLwithParams(realWine,bottle)
+		elsif wine =~ /^(pol|lutris)[-:]?/i
+			realWine = wine.sub(/^(pol|lutris)[-:]?/i,'')
+			cmd = getCustomwithParams(realWine,bottle,wine)
 		else
 			puts('Unknown --wine: '+wine)
 			if File.directory?(wine)
