@@ -462,10 +462,13 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 	end
 
 	if type == 'wine' || wine == 'wine' || (File.exists?(wine) && !File.directory?(wine)) || wine =~ /^(pol|lutris)[-:]?/i
+		vputs(V_DBG,"Used ENV/WINEPREFIX method to get bottle")
 		bottlePath = ENV['WINEPREFIX']
 	elsif resolveWine(wine) == 'gametree'
+		vputs(V_DBG,"Used ENV/cedega method to get bottle")
 		bottlePath = ENV['HOME']+'/.cedega/'+bottle
 	else
+		vputs(V_DBG,"Used CX method to get bottle")
 		bottlePath = getCXwithParams(wine,bottle,true,true)
 	end
 	if $wineArch
@@ -473,6 +476,10 @@ def setEnvAndExec (wine,bottle,cmd,args,type)
 		envPut('__WWINE_INT_WINEARCH',$wineArch)
 	end
 
+	if bottlePath == nil
+		puts "ERROR: setEnvAndExec() has no bottlePath"
+		exit 1
+	end
 	envPut('WINEPREFIX',bottlePath)
 	envPut('WINE',File.expand_path($0))
 	if args.length > 0
@@ -696,6 +703,10 @@ end
 
 # Purpose: Set an environment variable
 def envPut (name,value)
+	if value == nil
+		puts "ERROR: Tried to set nil env var: '"+name+"'"
+		exit 1
+	end
 	vputs(V_DBG,'Set '+name+'='+value)
 	ENV[name] = value;
 end
