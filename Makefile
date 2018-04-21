@@ -18,7 +18,7 @@ endif
 BINDIR ?= $(prefix)/bin
 DATADIR ?= $(prefix)/share
 
-DISTFILES=NEWS COPYING Makefile README wwine wwine.1
+DISTFILES=NEWS COPYING Makefile README.md wwine wwine.1
 
 # Install wwine
 install:

@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Eskild Hustvedt"]
   s.date = %q{2018-04-21}
   s.email = %q{code at zerodogg dot org}
-  s.files = [ 'wwine', 'README', 'COPYING', 'wwine.1' ]
+  s.files = [ 'wwine', 'README.md', 'COPYING', 'wwine.1' ]
   s.bindir = '.'
   s.licenses = %q{GPLv3}
   s.executables = [ 'wwine' ]
