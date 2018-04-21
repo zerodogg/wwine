@@ -998,13 +998,17 @@ def listWines(debug = false)
 		end
 
 		Dir.glob(ENV['HOME']+'/.PlayOnLinux/wine/linux-*/*') do |dir|
-			name = dir.sub(/^.*\/([^\/]+)/,'\1')
-			printf(outFormat,'pol-'+name,getWineVersion(dir+'/bin/wine'))
+			if File.executable?(dir+'/bin/wine')
+				name = dir.sub(/^.*\/([^\/]+)/,'\1')
+				printf(outFormat,'pol-'+name,getWineVersion(dir+'/bin/wine'))
+			end
 		end
 
 		Dir.glob(ENV['HOME']+'/.local/share/lutris/runners/wine/*') do |dir|
-			name = dir.sub(/^.*\/([^\/]+)/,'\1')
-			printf(outFormat,'lutris-'+name,getWineVersion(dir+'/bin/wine'))
+			if File.executable?(dir+'/bin/wine')
+				name = dir.sub(/^.*\/([^\/]+)/,'\1')
+				printf(outFormat,'lutris-'+name,getWineVersion(dir+'/bin/wine'))
+			end
 		end
 
 		if $wine != nil && debug
