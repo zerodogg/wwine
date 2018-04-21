@@ -1,5 +1,5 @@
 .IX Title "WWINE 1"
-.TH WWINE 1 "2013-11-10" "wwine 0.4" ""
+.TH WWINE 1 "2018-04-21" "wwine 0.4" ""
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -35,11 +35,12 @@ Display the help screen
 .IX Item "-w, --wine FLAVOUR"
 Use the supplied flavour of wine. The default is to use vanilla wine.
 
-Possible parameters: wine, crossover, cxgames, cxoffice, cedega, cx (alias for
-crossover), cxg (alias for cxgames), cxo (alias for cxoffice),
-/path/to/a/wine.binary or /path/to/a/crossover\-installation. Note that if you
-have crossover, but not cxgames installed, wwine will alias cxgames to
-crossover, to provide a simple upgrade path where wrapper scripts 'just work'.
+Possible parameters: wine, wine64, wine-unstable, wine\-unstable64, crossover,
+cxgames, cxoffice, cedega, cx (alias for crossover), cxg (alias for cxgames),
+cxo (alias for cxoffice), /path/to/a/wine.binary or
+/path/to/a/crossover\-installation. Note that if you have crossover, but not
+cxgames installed, wwine will alias cxgames to crossover, to provide a simple
+upgrade path where wrapper scripts 'just work'.
 
 If this parameter is not supplied, wwine will attempt to autodetect which wine
 to use, checking for the existance of flavours in the following order, using
@@ -63,6 +64,21 @@ used.
 PlayOnLinux wines are a special case. If a bottle with the name supplied exists
 in ~/.PlayOnLinux/wineprefixes/ then wwine will use that bottle (ie. the existing
 PlayOnLinux bottle), otherwise it will use a bottle in ~/.wwinebottles.
+.IP "\fB\-\-arch\fR \fI\s-1ARCH\s0\fR" 4
+.IX Item "--arch ARCH"
+Set the wine architecture to use. Accepts win32 and win64. If \fI\-\-wine\fR ends
+with 64, then it defaults to win64, otherwise it defaults to win32. Usually you
+won't need to explicitly provied an \fI\-\-arch\fR since wwine will infer it from
+\&\fI\-\-wine\fR.
+.IP "\fB\-g, \-\-gamemode\fR" 4
+.IX Item "-g, --gamemode"
+Enables Feral Interactive's GameMode library, if it is installed. GameMode will
+enable certain performance features while the program is running, and then
+reset them once it exits. Can be used to get a bit of extra performance for
+games
+.IP "\fB\-\-no\-gamemode\fR" 4
+.IX Item "--no-gamemode"
+Disable GameMode if enabled.
 .IP "\fB\-l, \-\-list\fR" 4
 .IX Item "-l, --list"
 List all available wine versions. This will list the names that can be supplied

@@ -35,6 +35,8 @@ $wwineDataFrom = nil
 $envMode = false
 # true if we're in --tricks mode
 $tricksMode = false
+# Wether to enable (LD_PRELOAD) the Feral Interactive GameMode library
+$preloadGameMode = false
 # A positive integer if we're in --kill or --drykill mode
 # (--drykill = 9999)
 $killMode = nil
@@ -291,8 +293,10 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 		exit(1)
 	end
 
-	# If we have a --arch we write v5, otherwise v4
-	if $wineArch
+	# --gamemode requires v6, --arch requires v5, otherwise we are v4 compatible
+	if $preloadGameMode
+		metaFormat = 'v6'
+	elsif $wineArch
 		metaFormat = 'v5'
 	else
 		metaFormat = 'v4'
@@ -361,6 +365,9 @@ def writeWrapper (targetFile, wwineCommand, otherCommand, cwd, wwineInfo, args, 
 			file.puts("\t"+"export WINEDEBUG="+shellQuote(ENV['WINEDEBUG']))
 		end
 	end
+	if $preloadGameMode
+		file.puts("\t"+'export LD_PRELOAD="/usr/\$LIB/libgamemodeauto.so:$LD_PRELOAD"')
+	end
 	file.puts("\t"+"exec "+shellQuote(otherCommand).join(" ")+' "$@"')
 	file.puts('fi')
 	file.puts('echo "Launch script failed. No wwine found and wine command failed to exec."')
@@ -379,6 +386,7 @@ def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 		'Dir' => 'nil',
 		'Bottle' => 'nil',
 		'Wine' => 'nil',
+		'GameMode' => 'nil',
 	}
 
 	# Generate a wwine command-line
@@ -392,6 +400,10 @@ def generateWwineCmd (wine,bottle,wineCommand,type = nil)
 	if $wineArch
 		wwineCmd.push('--arch',$wineArch)
 		wwineInfo['Arch'] = $wineArch
+	end
+	if $preloadGameMode
+		wwineCmd.push('--gamemode')
+		wwineInfo['GameMode'] = 'true'
 	end
 	if wine
 		wwineCmd.push('--wine',wine)
@@ -536,7 +548,8 @@ def loadWwineDataFromFile (file,dryRun = false)
 			puts "Unable to continue."
 			exit(0)
 		end
-		if info['Info'] == 'v2' || info['Info'] == 'v3' || info['Info'] == 'v4' || info['Info'] == 'v5'
+		# FIXME: Should convert info version to an integer and just check that
+		if info['Info'] == 'v2' || info['Info'] == 'v3' || info['Info'] == 'v4' || info['Info'] == 'v5' || info['Info'] == 'v6'
 			vputs(V_DBG,'File contains wwine metadata '+info['Info'])
 			info = parseWwineDataV2(info);
 		elsif info['Info'].match(/^v1/)
@@ -556,7 +569,7 @@ def loadWwineDataFromFile (file,dryRun = false)
 			info = parseWwineDataV1(info)
 		else
 			version = info['Info'].sub(/^(v\S+).+/,'\1').chomp
-			puts "This version of wwine supports info format v2, v3, v4 and v5."
+			puts "This version of wwine supports info format v2, v3, v4, v5 and v6."
 			puts "This file is version "+version
 			puts "Unable to continue."
 			exit(0)
@@ -617,6 +630,13 @@ def loadWwineDataFromFile (file,dryRun = false)
 			else
 				puts('WARNING: Arch: '+info['Arch']+' is invalid, ignoring!')
 			end
+		end
+
+		# Enable GameMode if needed
+		if info['GameMode'] && info['GameMode'] == 'true'
+			$preloadGameMode = true
+			# FIXME: Drop the 'true'
+			printf(outFormat,outMessage+'--gamemode','true')
 		end
 
 		# Set the command to run
@@ -1299,7 +1319,7 @@ def getCustomwithParams(wine,bottle, type = 'POL', missingIsFatal = true, return
 	envPut('WINELOADER',detectedWine)
 	envPut('WINEDLLPATH',detectedWineDir+'/lib/wine:'+ENV['WINEDLLPATH'].to_s)
 	envPut('LD_LIBRARY_PATH',detectedWineDir+'/lib:'+ENV['LD_LIBRARY_PATH'].to_s)
-	getWineWithParams(detectedWine,bottle,missingIsFatal,polMode)
+	return getWineWithParams(detectedWine,bottle,missingIsFatal,polMode)
 end
 
 # Purpose: Detect which wine to use and get parameters for that one
@@ -1428,6 +1448,13 @@ def runWine (wine,bottle,args)
 		if $wineArch
 			envPut('WINEARCH',$wineArch)
 		end
+		if $preloadGameMode
+			preload = '/usr/$LIB/libgamemodeauto.so'
+			if ENV['LD_PRELOAD']
+				preload = preload+':'+ENV['LD_PRELOAD']
+			end
+			envPut('LD_PRELOAD',preload)
+		end
 		runcmd(cmd)
 	end
 end
@@ -1454,6 +1481,8 @@ else
 		[ '--bottle', '-b', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--arch', GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--kill', '-k', GetoptLong::OPTIONAL_ARGUMENT ],
+		[ '--gamemode','-g', GetoptLong::NO_ARGUMENT ],
+		[ '--no-gamemode', GetoptLong::NO_ARGUMENT ],
 		[ '--running','--drykill', GetoptLong::NO_ARGUMENT ],
 		[ '--debug',GetoptLong::REQUIRED_ARGUMENT ],
 		[ '--cxinstalldir','-c',GetoptLong::REQUIRED_ARGUMENT ],
@@ -1494,6 +1523,10 @@ begin
 		when '--help'
 			Help()
 			exit(0)
+		when '--gamemode'
+			$preloadGameMode = true
+		when '--no-gamemode'
+			$preloadGameMode = false
 		when '--wine'
 			$wine = arg
 		when '--bottle'

@@ -82,6 +82,17 @@ with 64, then it defaults to win64, otherwise it defaults to win32. Usually you
 won't need to explicitly provied an I<--arch> since wwine will infer it from
 I<--wine>.
 
+=item B<-g, --gamemode>
+
+Enables Feral Interactive's GameMode library, if it is installed. GameMode will
+enable certain performance features while the program is running, and then
+reset them once it exits. Can be used to get a bit of extra performance for
+games
+
+=item B<--no-gamemode>
+
+Disable GameMode if enabled.
+
 =item B<-l, --list>
 
 List all available wine versions. This will list the names that can be supplied

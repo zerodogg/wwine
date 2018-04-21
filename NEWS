@@ -9,6 +9,7 @@ Version 0.4
     with the path to a CX installation directory
 - Fixed use of --wine when combined with --wrap or --tricks
 - Added explicit support for 64bit wine (bumps the wwine metadata format to v5)
+- Added support for preloading Freal Interactive's gamemode library
 
 Version 0.3
 - Output from --kill and --drykill now lists bottle and wine flavour
