@@ -688,7 +688,7 @@ def parseWwineDataV1 (rawData)
 			info['Wine'] = info['Cxinstalldir']
 		end
 	end
-	
+
 	cmd = []
 
 	unquoteShellArray(rawData['Cmd'],cmd)
@@ -887,7 +887,7 @@ end
 def getCXVersionsFrom (source,wantString = false)
 	cxVer = nil
 	cxwVer = nil
-	if source != nil 
+	if source != nil
 		begin
 			# Store the binfile for use later
 			binFile = source[0]
