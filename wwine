@@ -195,6 +195,8 @@ def getFromEnviron(path)
 			info['wine'] = 'cxgames'
 		elsif env['__WWINE_INT_XWINE']
 			info['wine'] = env['__WWINE_INT_XWINE']
+		elsif env['WINE']
+			info['wine'] = env['WINE']
 		elsif env['WINELOADER']
 			info['wine'] = 'wine'
 		elsif info['bottle'] == '.wine-pipelight'
@@ -1514,6 +1516,10 @@ def resolveWine(wine)
 	map['cedega'] = 'gametree'
 	if(map[wine])
 		wine = map[wine]
+	end
+	if wine =~ /\.local\/share\/lutris/
+		remapped = wine.sub!(/^.*\.local\/share\/lutris\/runners\/wine\/([^\/]+).*/,'\1')
+		return 'lutris-'+remapped
 	end
 	return wine
 end
