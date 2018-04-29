@@ -58,8 +58,10 @@ def killWine (signal)
 	end
 	# Open a pipe to ps to read processes
 	wines = IO.popen('ps uxw')
-	# True if we have killed something
-	killed = false
+	# The result of our ps parsing
+	wineResult = []
+	# The length of the "wine" name, used to format the output well
+	wineLength = 10
 	# The name of the signal being sent
 	sigName = 'SIGTERM'
 	# Get an integer version of signal parameter
@@ -85,8 +87,6 @@ def killWine (signal)
 	if !dryRun
 		print 'Sending '+sigName+' to the following processes:'+"\n\n"
 	end
-	format = "%-10s %-12s %-8s %-20s\n"
-	printf(format,'Wine','Bottle','PID','Command')
 	# Go through each line in the 'ps' output
 	wines.each do |line|
 		# True if we *require* /proc to be read for this process.
@@ -149,19 +149,36 @@ def killWine (signal)
 		elsif $bottle && $bottle != extra['bottle']
 			next
 		end
+		resolvedWine = resolveWine(extra['wine'])
 		# Output information
-		printf(format,extra['wine'],extra['bottle'],pid,name)
+		wineResult.push({
+			'wine' => resolvedWine,
+			'bottle' => extra['bottle'],
+			'pid' => pid,
+			'name' => name
+		})
+
+		if resolvedWine.length > wineLength
+			wineLength = resolvedWine.length
+		end
+	end
+	# The format of the output
+	format = "%-"+wineLength.to_s+"s %-12s %-8s %-20s\n"
+	# Header
+	printf(format,'Wine','Bottle','PID','Command')
+	# Display or send signals to each entry
+	wineResult.each do |entry|
+		printf(format,entry['wine'],entry['bottle'],entry['pid'],entry['name'])
 		# Send SIGTERM (or output information if in dryRun mode)
 		if !dryRun
 			begin
-				Process.kill(signal,pid.to_i)
-			rescue 
-				puts('Error while attempting to send signal to '+pid+': '+$!)
+				Process.kill(signal,entry['pid'].to_i)
+			rescue
+				puts('Error while attempting to send signal to '+entry['pid']+': '+$!)
 			end
 		end
-		killed = true
 	end
-	if ! killed
+	if wineResult.length < 0
 		puts 'No wine processes found.'
 	end
 end
